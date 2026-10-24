@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+    .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #2c3e50; margin-top: 0; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #555; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+    button { width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+    button:hover { background-color: #219150; }
+    button:disabled { background-color: #95a5a6; cursor: not-allowed; }
+    #dashboard { display: none; }
+    .alert { color: #e74c3c; text-align: center; margin-top: 15px; font-size: 14px; display: none; }
+    
+    .kartu-siswa { background-color: #e8f8f5; padding: 15px; border-radius: 8px; border-left: 4px solid #1abc9c; margin-bottom: 15px; }
+    .kartu-siswa p { margin: 5px 0; font-size: 14px; }
+    
+    /* Style Target Qiroah */
+    .btn-info-target { background-color: #17a2b8; margin-bottom: 10px; }
+    .btn-info-target:hover { background-color: #138496; }
+    .box-target { display: none; background: #e0f7fa; padding: 15px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; }
+    .custom-progress-container { background: #fff; border: 1px solid #eee; border-left: 4px solid #28a745; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .qiroah-bar-label { font-size: 13px; margin-bottom: 8px; }
+    .progress { height: 24px; background-color: #e9ecef; border-radius: 4px; overflow: hidden; width: 100%; }
+    .progress-bar { display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; height: 100%; }
+    .bg-success { background-color: #28a745; }
+    .bg-danger { background-color: #dc3545; }
+    
+    /* Area Tugas Modification */
+    .kartu-tugas { background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-top: 25px; display: none; }
+    .kartu-tugas h3 { margin-top: 0; color: #856404; font-size: 16px; margin-bottom: 15px; }
+    .item-tugas { background: #ffffff; border: 1px solid #ffeeba; padding: 12px; margin-bottom: 12px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .item-tugas-tanggal { font-size: 12px; color: #856404; margin-bottom: 5px; font-weight: bold; }
+    .item-tugas-teks { font-size: 15px; margin-bottom: 10px; color: #333; }
+    
+    .table-container { overflow-x: auto; border: 1px solid #ddd; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; min-width: 500px; }
+    th { background-color: #f8f9fa; padding: 10px; text-align: left; font-size: 13px; color: #555; border-bottom: 2px solid #dee2e6; }
+    td { padding: 10px; font-size: 13px; border-bottom: 1px solid #eee; }
+    
+    .btn-tugas { background-color: #007bff; color: white; font-size: 14px; padding: 10px; margin-top: 5px; }
+    .btn-tugas:hover { background-color: #0069d9; }
+    .btn-tugas-selesai { background-color: #28a745 !important; cursor: default !important; }
+  </style>
+</head>
+<body>
+
+<div id="loginSection" class="container" style="max-width: 400px;">
+  <h2>Portal Wali Murid</h2>
+  <p style="text-align:center; font-size: 14px; color:#7f8c8d;">Masuk untuk memantau hafalan Ananda</p>
+  
+  <div class="form-group">
+    <label>Kode Sekolah dan NIS Siswa</label>
+    <input type="text" id="idSiswa" placeholder="Contoh: 231900" autocomplete="off">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Masukkan angka rahasia">
+  </div>
+  
+  <button onclick="prosesLogin()" id="btnLogin">Masuk ke Portal</button>
+  <div id="loginMsg" class="alert"></div>
+</div>
+
+<div id="dashboard" class="container">
+  <h2>Beranda Evaluasi</h2>
+  
+  <div class="kartu-siswa" id="infoSiswa"></div>
+
+  <button class="btn-info-target" onclick="toggleTargetQiroah()">ℹ️ Lihat Standar Target Qiroah</button>
+  <div id="boxTargetQiroah" class="box-target">
+    <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:8px; font-size:14px;">
+      <span>Acuan Target Qiroah</span>
+      <span style="cursor:pointer; color:#dc3545;" onclick="toggleTargetQiroah()">✖ Tutup</span>
+    </div>
+    <table style="width:100%; border:none; min-width:unset;">
+      <tr><td style="border:none; padding:4px 0;"><strong>Kelas 1</strong></td><td style="border:none; padding:4px 0;">: At Tartil 1-3</td></tr>
+      <tr><td style="border:none; padding:4px 0;"><strong>Kelas 2</strong></td><td style="border:none; padding:4px 0;">: At Tartil 4-6</td></tr>
+      <tr><td style="border:none; padding:4px 0;"><strong>Kelas 3-6</strong></td><td style="border:none; padding:4px 0;">: Al Quran</td></tr>
+    </table>
+    <button onclick="toggleTargetQiroah()" style="background-color:#6c757d; margin-top:10px; padding:8px; font-size:13px;">Tutup Info</button>
+  </div>
+
+  <div id="wadahGrafikSiswa"></div>
+  
+  <h3 style="font-size: 16px; margin-bottom: 10px;">Riwayat Perkembangan Terakhir</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Capaian</th>
+          <th>Catatan Guru</th>
+          <th>Status</th>
+          <th>Nilai & Catatan Nilai</th>
+        </tr>
+      </thead>
+      <tbody id="tabelRiwayatWali">
+        <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TAMBAHAN: Wadah untuk Tombol Lihat Selengkapnya -->
+  <div id="wadahTombolRiwayat" style="text-align:center; margin-top: 10px; margin-bottom: 20px;"></div>
+
+  <div class="kartu-tugas" id="areaTugas">
+    <h3>Tugas Rumah Saat Ini</h3>
+    <!-- Wadah untuk menampung banyak tugas -->
+    <div id="daftarTugasWadah"></div>
+  </div>
+  <!-- TAMBAHAN: Wadah untuk Tombol Lihat Selengkapnya Tugas -->
+    <div id="wadahTombolTugas" style="text-align:center; margin-top: 15px; margin-bottom: 5px;"></div>
+  
+  <button onclick="keluar()" style="background-color: #e74c3c; margin-top: 25px;">Keluar Sistem</button>
+</div>
+
+  <script>
+  // --- VARIABEL GLOBAL ---
+  var currentIdSiswa = "";
+  var currentKelasSiswa = "";
+
+  // ==========================================
+  // 1. CEK OTOMATIS SAAT HALAMAN DIBUKA (AUTO-LOGIN)
+  // ==========================================
+  function jalankanAutoLogin() {
+    try {
+      var simpananSesi = localStorage.getItem('sesiOrtuQiroah');
+      
+      if (simpananSesi) {
+        var dataSesiOrtu = JSON.parse(simpananSesi);
+        
+        // Pulihkan variabel global
+        currentIdSiswa = dataSesiOrtu.idSiswa;
+        currentKelasSiswa = dataSesiOrtu.kelas;
+        
+        // Langsung tampilkan Dashboard
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        document.getElementById("infoSiswa").innerHTML = 
+          "<p><strong>Nama:</strong> " + dataSesiOrtu.namaSiswa + "</p>" +
+          "<p><strong>Kelas:</strong> " + dataSesiOrtu.kelas + " | <strong>Unit:</strong> " + dataSesiOrtu.unit + "</p>";
+        
+        // Tarik data riwayat siswa
+        if (typeof tarikRiwayat === "function") {
+          tarikRiwayat(currentIdSiswa);
+        }
+      }
+    } catch (e) {
+      console.error("Gagal memuat sesi:", e);
+      localStorage.removeItem('sesiOrtuQiroah');
+    }
+  }
+
+  // Panggil fungsi secara langsung sesaat setelah halaman membaca baris ini!
+  jalankanAutoLogin();
+
+  // ==========================================
+  // 2. PROSES LOGIN MANUAL
+  // ==========================================
+  function prosesLogin() {
+    var id = document.getElementById("idSiswa").value.trim().toUpperCase();
+    var pass = document.getElementById("password").value.trim();
+    var msg = document.getElementById("loginMsg");
+    var btn = document.getElementById("btnLogin");
+
+    if(!id || !pass) {
+      msg.style.display = "block"; 
+      msg.innerText = "ID Siswa dan Password wajib diisi."; 
+      return;
+    }
+    
+    msg.style.display = "none";
+    // (Tambahkan ini di dalam fungsi prosesLogin sebelum memeriksa data ke server)
+    document.getElementById("tabelRiwayatWali").innerHTML = '<tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>';
+    document.getElementById("wadahGrafikSiswa").innerHTML = "";
+    document.getElementById("daftarTugasWadah").innerHTML = "";
+    document.getElementById("areaTugas").style.display = "none";
+    btn.innerText = "Memeriksa Data..."; 
+    btn.disabled = true;
+
+    google.script.run.withSuccessHandler(function(res) {
+        btn.innerText = "Masuk ke Portal"; 
+        btn.disabled = false;
+        
+        if(res.status === "success") {
+          currentIdSiswa = res.data.idSiswa;
+          currentKelasSiswa = res.data.kelas; 
+          
+          // SIMPAN SESI KE LOCALSTORAGE
+          var dataSesiOrtu = {
+            idSiswa: res.data.idSiswa,
+            kelas: res.data.kelas,
+            namaSiswa: res.data.namaSiswa,
+            unit: res.data.unit
+          };
+          localStorage.setItem('sesiOrtuQiroah', JSON.stringify(dataSesiOrtu));
+
+          // Tampilkan Dashboard
+          document.getElementById("loginSection").style.display = "none";
+          document.getElementById("dashboard").style.display = "block";
+          document.getElementById("infoSiswa").innerHTML = 
+            "<p><strong>Nama:</strong> " + res.data.namaSiswa + "</p>" +
+            "<p><strong>Kelas:</strong> " + res.data.kelas + " | <strong>Unit:</strong> " + res.data.unit + "</p>";
+          
+          if (typeof tarikRiwayat === "function") {
+            tarikRiwayat(currentIdSiswa);
+          }
+        } else {
+          msg.innerText = res.message; 
+          msg.style.display = "block";
+        }
+      }).cekLoginWali(id, pass);
+  }
+
+// ==========================================
+  // 3. FUNGSI KELUAR (HAPUS SESI & BERSIHKAN TAMPILAN)
+  // ==========================================
+  function keluar() {
+    // 1. Hapus data dari penyimpanan lokal
+    localStorage.removeItem('sesiOrtuQiroah');
+    
+    // 2. Reset Variabel Global
+    currentIdSiswa = "";
+    currentKelasSiswa = "";
+    
+    // 3. Reset form input login
+    document.getElementById("idSiswa").value = "";
+    document.getElementById("password").value = "";
+    
+    // 4. Sembunyikan Dashboard dan Tampilkan Login
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("loginSection").style.display = "block";
+    
+    // 5. BERSIHKAN DATA HTML AGAR TIDAK NYANGKUT KE USER LAIN
+    var tbody = document.getElementById("tabelRiwayatWali");
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>';
+    
+    var wadahGrafik = document.getElementById("wadahGrafikSiswa");
+    if (wadahGrafik) wadahGrafik.innerHTML = "";
+    
+    var daftarTugasWadah = document.getElementById("daftarTugasWadah");
+    if (daftarTugasWadah) daftarTugasWadah.innerHTML = "";
+    
+    var wadahTombolRiwayat = document.getElementById("wadahTombolRiwayat");
+    if (wadahTombolRiwayat) wadahTombolRiwayat.innerHTML = "";
+    
+    var wadahTombolTugas = document.getElementById("wadahTombolTugas");
+    if (wadahTombolTugas) wadahTombolTugas.innerHTML = "";
+    
+    var areaTugas = document.getElementById("areaTugas");
+    if(areaTugas) areaTugas.style.display = "none";
+    
+    var boxTarget = document.getElementById("boxTargetQiroah");
+    if(boxTarget) boxTarget.style.display = "none";
+  }
+
+  function toggleTargetQiroah() {
+    var box = document.getElementById("boxTargetQiroah");
+    box.style.display = (box.style.display === "block") ? "none" : "block";
+  }
+
+  function cekTargetQiroahSiswa(kelas, capaianStr) {
+    if (!capaianStr || !kelas) return false;
+    
+    var klsNum = parseInt(kelas.toString().replace(/[^0-9]/g, '')) || 0;
+    var teksCapaian = capaianStr.toLowerCase();
+    
+    var bobot = 0;
+    if (teksCapaian.includes("al quran") || teksCapaian.includes("al-quran")) { bobot = 7; }
+    else if (teksCapaian.includes("at tartil 6") || teksCapaian.includes("jilid 6")) { bobot = 6; }
+    else if (teksCapaian.includes("at tartil 5") || teksCapaian.includes("jilid 5")) { bobot = 5; }
+    else if (teksCapaian.includes("at tartil 4") || teksCapaian.includes("jilid 4")) { bobot = 4; }
+    else if (teksCapaian.includes("at tartil 3") || teksCapaian.includes("jilid 3")) { bobot = 3; }
+    else if (teksCapaian.includes("at tartil 2") || teksCapaian.includes("jilid 2")) { bobot = 2; }
+    else if (teksCapaian.includes("at tartil 1") || teksCapaian.includes("jilid 1")) { bobot = 1; }
+
+    if (klsNum === 1) return (bobot >= 3);
+    else if (klsNum === 2) return (bobot >= 6);
+    else if (klsNum >= 3) return (bobot >= 7);
+    
+    return false;
+  }
+
+  function tarikRiwayat(idSiswa) {
+  google.script.run
+    .withSuccessHandler(function(res) {
+      // 🚀 PENGAMAN UTAMA: Cek apakah res bernilai null/undefined
+      if (!res) {
+        alert("Gagal memuat data: Respon dari server kosong (null). Pastikan perubahan pada file .gs sudah disimpan.");
+        return;
+      }
+
+      if(res.status === "success") {
+        var tbody = document.getElementById("tabelRiwayatWali"); 
+        tbody.innerHTML = "";
+        var wadahGrafik = document.getElementById("wadahGrafikSiswa");
+        
+        var wadahTombol = document.getElementById("wadahTombolRiwayat");
+        if(wadahTombol) wadahTombol.innerHTML = "";
+        
+        if(res.riwayat.length > 0) {
+          // Render Grafik
+          var capaianTerbaru = res.riwayat[0].jilid;
+          var isLulus = cekTargetQiroahSiswa(currentKelasSiswa, capaianTerbaru);
+          wadahGrafik.innerHTML = `
+            <div class="custom-progress-container" style="border-left-color: ${isLulus ? '#28a745' : '#dc3545'};">
+              <h3 style="font-size: 15px; margin-top: 0; margin-bottom:10px; color: #333;">📊 Grafik Target Qiroah Siswa</h3>
+              <div class="qiroah-bar-label">Capaian Aktual: <strong>${capaianTerbaru}</strong></div>
+              <div class="progress">
+                <div class="progress-bar ${isLulus ? 'bg-success' : 'bg-danger'}" style="width: 100%">
+                  ${isLulus ? 'MENCAPAI TARGET KELAS' : 'BELUM MENCAPAI TARGET KELAS'}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // RENDER TABEL RIWAYAT
+          res.riwayat.forEach(function(row, index) {
+            var tr = document.createElement("tr");
+            
+            if (index >= 5) {
+              tr.className = "baris-riwayat-lama-qiroah";
+              tr.style.display = "none";
+            }
+
+            var dataNilai = (row.nilai && row.nilai.toString().trim() !== "") ? `<strong>${aman(row.nilai)}</strong>` : "-";
+            var dataCatatanNilai = (row.catatanGuru && row.catatanGuru.toString().trim() !== "") ? `<br><small style="color: #666;"><i>${aman(row.catatanGuru)}</i></small>` : "";
+            var selNilaiGabungan = dataNilai + dataCatatanNilai;
+
+            tr.innerHTML = `
+              <td>${aman(row.tanggal)}</td>
+              <td><strong>${aman(row.jilid)}</strong><br>Hal ${aman(row.halaman)}</td>
+              <td>${aman(row.catatan) || "-"}</td>
+              <td>${aman(row.statusLancar) || "-"}</td>
+              <td style="text-align: center;">${selNilaiGabungan}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          if (res.riwayat.length > 5 && wadahTombol) {
+            wadahTombol.innerHTML = `
+              <button onclick="bukaSemuaRiwayatWali()" style="background-color: #3498db; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                Lihat Selengkapnya (${res.riwayat.length - 5} riwayat lagi) ⬇
+              </button>
+            `;
+          }
+        } else {
+          wadahGrafik.innerHTML = "";
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada riwayat setoran.</td></tr>`;
+        }
+
+        // RENDER TUGAS
+        var areaTugas = document.getElementById("areaTugas");
+        var daftarTugasWadah = document.getElementById("daftarTugasWadah");
+        var wadahTombolTugas = document.getElementById("wadahTombolTugas"); 
+        
+        if (wadahTombolTugas) wadahTombolTugas.innerHTML = ""; 
+        
+        if(res.daftarTugas && res.daftarTugas.length > 0) {
+          
+          var daftarTugasValid = res.daftarTugas.filter(function(t) {
+            var teksTugas = (t.tugas !== undefined && t.tugas !== null) ? String(t.tugas).trim() : "";
+            return teksTugas !== "" && teksTugas !== "-";
+          });
+
+          if (daftarTugasValid.length > 0) {
+            daftarTugasWadah.innerHTML = ""; 
+            
+            var tugasDiurutkan = daftarTugasValid.sort(function(a, b) {
+              var aSelesai = (a.statusSetoran === "Sudah Dikerjakan");
+              var bSelesai = (b.statusSetoran === "Sudah Dikerjakan");
+              if (!aSelesai && bSelesai) return -1; 
+              if (aSelesai && !bSelesai) return 1;  
+              return 0;
+            });
+
+            tugasDiurutkan.forEach(function(tugas, index) {
+                var btnHtml = "";
+                if (tugas.statusSetoran === "Sudah Dikerjakan") {
+                  btnHtml = `<button class="btn-tugas btn-tugas-selesai" disabled>✓ Sudah Dikerjakan</button>`;
+                } else {
+                  btnHtml = `<button class="btn-tugas" onclick="tandaiTugasSelesai('${tugas.idDokumen}', this)">Konfirmasi Tugas Dikerjakan</button>`;
+                }
+
+                var htmlPenilaian = "";
+                var nilaiGuru = tugas.nilai || "";
+                var catatanGuru = tugas.catatanGuru || "";
+                
+                if (nilaiGuru.toString().trim() !== "" || catatanGuru.toString().trim() !== "") {
+                   var elemenNilai = nilaiGuru !== "" ? `<div style="margin-bottom: 4px;"><strong>Nilai:</strong> <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">${aman(nilaiGuru)}</span></div>` : "";
+                   var elemenCatatan = catatanGuru !== "" ? `<div style="font-size: 13px; color: #555;"><strong>Catatan Guru:</strong> <i>${aman(catatanGuru)}</i></div>` : "";
+                   
+                   htmlPenilaian = `
+                     <div style="background-color: #f8f9fa; border-left: 4px solid #17a2b8; padding: 8px 12px; margin-top: 10px; margin-bottom: 12px; border-radius: 4px;">
+                       ${elemenNilai}
+                       ${elemenCatatan}
+                     </div>
+                   `;
+                }
+
+                var styleSembunyi = (index >= 5) ? "display: none;" : "";
+                var classSembunyi = (index >= 5) ? "tugas-lama-sembunyi" : "";
+
+                var tugasHtml = `
+                  <div class="item-tugas ${classSembunyi}" style="${styleSembunyi}">
+                    <div class="item-tugas-tanggal">Tugas Tanggal: ${aman(tugas.tanggal)}</div>
+                    <div class="item-tugas-teks">${aman(tugas.tugas)}</div>
+                    ${htmlPenilaian} 
+                    ${btnHtml}
+                  </div>
+                `;
+                daftarTugasWadah.innerHTML += tugasHtml;
+            });
+
+            if (tugasDiurutkan.length > 5 && wadahTombolTugas) {
+              wadahTombolTugas.innerHTML = `
+                <button onclick="bukaSemuaTugasWali()" style="background-color: #3498db; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                  Lihat Selengkapnya (${tugasDiurutkan.length - 5} tugas lagi) ⬇
+                </button>
+              `;
+            }
+            areaTugas.style.display = "block";
+          } else {
+            areaTugas.style.display = "none";
+          }
+        } else {
+          areaTugas.style.display = "none";
+        }
+      } else {
+        alert("Gagal memuat riwayat: " + res.message);
+      }
+    })
+    .withFailureHandler(function(err) {
+        console.error("Gagal menarik data dari server: ", err);
+        var daftarTugasWadah = document.getElementById("daftarTugasWadah");
+        if(daftarTugasWadah) {
+            daftarTugasWadah.innerHTML = `<div style="color:#dc3545; padding: 15px; text-align: center; background-color: #f8d7da; border-radius: 5px;">⚠️ Gagal memuat tugas. Silakan muat ulang halaman.<br><small>${err.message || err}</small></div>`;
+        }
+    })
+    .getRiwayatWaliDariFirestore(idSiswa);
+}
+
+// ====================================================================
+// FUNGSI KONFIRMASI TUGAS (SINKRON DENGAN UPDATE_STATUS_CENTANG)
+// ====================================================================
+function tandaiTugasSelesai(idDokumen, btnElement) {
+  btnElement.innerText = "Mengirim Konfirmasi...";
+  btnElement.disabled = true;
+
+  google.script.run.withSuccessHandler(function(res) {
+      if(res.status === 'success') {
+         alert("Alhamdulillah, notifikasi tugas selesai telah terkirim kepada Ustadz/Ustadzah.");
+         btnElement.innerText = "✓ Sudah Dikerjakan";
+         btnElement.classList.add("btn-tugas-selesai");
+      } else {
+         btnElement.innerText = "Konfirmasi Tugas Dikerjakan";
+         btnElement.disabled = false;
+         alert("Gagal mengupdate: " + res.message);
+      }
+    })
+    .withFailureHandler(function(err) {
+      btnElement.innerText = "Konfirmasi Tugas Dikerjakan";
+      btnElement.disabled = false;
+      alert("Gagal mengirim konfirmasi: " + err);
+    })
+    // 🚀 Memanggil fungsi GS Anda yang sudah dimodifikasi untuk menerima ID
+    .updateStatusCentang(idDokumen, true); 
+}
+
+// FUNGSI UNTUK MEMBUKA SELURUH RIWAYAT
+function bukaSemuaRiwayatWali() {
+  var barisSembunyi = document.querySelectorAll(".baris-riwayat-lama-qiroah");
+  barisSembunyi.forEach(function(tr) {
+    tr.style.display = "table-row";
+  });
+  
+  // Sembunyikan tombol setelah diklik
+  var wadahTombol = document.getElementById("wadahTombolRiwayat");
+  if (wadahTombol) wadahTombol.innerHTML = "";
+}
+
+  // FUNGSI UNTUK MEMBUKA SELURUH TUGAS RUMAH
+function bukaSemuaTugasWali() {
+  // Cari semua tugas yang disembunyikan
+  var tugasSembunyi = document.querySelectorAll(".tugas-lama-sembunyi");
+  
+  // Ubah display menjadi block agar muncul
+  tugasSembunyi.forEach(function(div) {
+    div.style.display = "block";
+  });
+  
+  // Kosongkan / sembunyikan tombol setelah diklik
+  var wadahTombol = document.getElementById("wadahTombolTugas");
+  if (wadahTombol) wadahTombol.innerHTML = "";
+}
+
+// ====================================================================
+// FUNGSI PENGAMAN TEKS (ANTI-ERROR KUTIP)
+// ====================================================================
+function aman(teks) {
+  if (teks === null || teks === undefined) return "";
+  return teks.toString()
+    .replace(/'/g, "&#39;")   // Mengamankan tanda petik tunggal
+    .replace(/"/g, "&quot;")  // Mengamankan tanda petik ganda
+    .replace(/</g, "&lt;")    // Mengamankan tag buka HTML
+    .replace(/>/g, "&gt;");   // Mengamankan tag tutup HTML
+}
+
+</script>
+
+</body>
+</html>

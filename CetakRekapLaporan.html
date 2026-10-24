@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Times New Roman', Times, serif; padding: 20px; color: #000; }
+    .header { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #000; padding-bottom: 10px; }
+    .header h2, .header h3 { margin: 5px 0; }
+    .info-laporan { margin-bottom: 20px; font-size: 14px;}
+    .info-laporan table { width: 100%; }
+    
+    table.data-tabel { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px; }
+    table.data-tabel th, table.data-tabel td { border: 1px solid #000; padding: 6px; text-align: left; }
+    table.data-tabel th { background-color: #f2f2f2; text-align: center; }
+    
+    .tanda-tangan { width: 100%; display: flex; justify-content: space-between; margin-top: 50px; font-size: 14px; text-align: center; }
+    .ttd-box { width: 250px; }
+    .ttd-space { height: 80px; }
+    
+    /* CSS Khusus untuk Print */
+    @media print {
+      body { padding: 0; }
+      @page { margin: 1cm; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="no-print" onclick="window.print()" style="padding: 10px 20px; margin-bottom: 20px; cursor: pointer;">🖨️ Cetak PDF / Dokumen</button>
+
+  <div class="header">
+    <h2 style="margin: 0;">LAPORAN REKAPITULASI CAPAIAN QIROAH BULANAN</h2>
+    <h3 style="margin: 0;">SEKOLAH DASAR ISLAM TERPADU AL MADINAH</h3>
+    <h3 style="margin: 0;">UNIT <span id="lblUnit"></span></h3>
+  </div>
+
+  <div class="info-laporan">
+    <table border="0">
+      <tr>
+        <td width="15%"><strong>Guru Pengampu</strong></td>
+        <td width="2%">:</td>
+        <td id="lblUstadz"></td>
+      </tr>
+      <tr>
+        <td><strong>Periode</strong></td>
+        <td>:</td>
+        <td id="lblPeriode"></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- TABEL DISAMAKAN DENGAN WEB APP: 6 KOLOM -->
+  <table class="data-tabel">
+    <thead>
+      <tr>
+        <th width="5%" style="text-align:center;">No</th>
+        <th width="25%">Nama Murid</th>
+        <th width="15%" style="text-align:center;">Tgl Capaian Awal</th>
+        <th width="20%" style="text-align:center;">Capaian Awal</th>
+        <th width="15%" style="text-align:center;">Tgl Capaian Akhir</th>
+        <th width="20%">Capaian Akhir</th>
+      </tr>
+    </thead>
+    <tbody id="tabelBody">
+    </tbody>
+  </table>
+
+  <div class="tanda-tangan">
+    <div class="ttd-box">
+      <p>Mengetahui,<br>Kepala Sekolah</p>
+      <div class="ttd-space"></div>
+      <p><strong><u id="lblKepsek"></u></strong></p>
+    </div>
+    <div class="ttd-box">
+      <p><span id="lblTanggalCetak"></span><br>Guru Pengampu</p>
+      <div class="ttd-space"></div>
+      <p><strong><u id="lblTtdUstadz"></u></strong></p>
+    </div>
+  </div>
+
+  <script>
+  window.onload = function() {
+    var tglMulai = "<?= tglMulai ?>";
+    var tglSelesai = "<?= tglSelesai ?>";
+    var ustadz = "<?= ustadz ?>";
+    var unit = "<?= unit ?>";
+    var kategori = "<?= kategori ?>";
+    var filterVal = "<?= filterVal ?>";
+    
+    if (!tglMulai || !tglSelesai || tglMulai === "") {
+      alert("Parameter cetak tidak lengkap.");
+      document.body.innerHTML = "<h3>Terjadi kesalahan: Parameter cetak tidak lengkap. Silakan kembali ke menu utama.</h3>";
+      return;
+    }
+    
+    google.script.run
+      .withSuccessHandler(function(response) {
+        if (response.status === "success") {
+          var unitText = unit ? unit.toUpperCase() : "SEMUA UNIT";
+          document.getElementById('lblUnit').innerText = unitText;
+          
+          var kotaMap = {
+            "NOGOSARI": "Nogosari",
+            "KARTASURA": "Kartasura",
+            "CEPOGO": "Cepogo"
+          };
+          
+          var namaKota = kotaMap[unit.toUpperCase()] || "Surakarta";
+          
+          document.getElementById('lblUstadz').innerText = ustadz;
+          document.getElementById('lblTtdUstadz').innerText = ustadz;
+          document.getElementById('lblPeriode').innerText = tglMulai + " s/d " + tglSelesai;
+          document.getElementById('lblKepsek').innerText = response.namaKepsek;
+          
+          var tglHariIni = new Date().toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          });
+          document.getElementById('lblTanggalCetak').innerText = namaKota + ", " + tglHariIni;
+        
+          var tbody = document.getElementById("tabelBody");
+          tbody.innerHTML = ""; 
+          
+          if (response.data.length > 0) {
+            response.data.forEach(function(row, index) {
+              var tr = document.createElement("tr");
+              // MENYESUAIKAN 6 KOLOM SEPERTI DI WEB APP
+              tr.innerHTML = `
+                <td style="text-align:center; border: 1px solid #000; padding: 5px;">${index + 1}</td>
+                <td style="border: 1px solid #000; padding: 5px;">${row.nama || '-'}</td>
+                <td style="text-align:center; border: 1px solid #000; padding: 5px;">${row.tglAwal || '-'}</td>
+                <td style="text-align:center; border: 1px solid #000; padding: 5px;">${row.capaianAwal || '-'}</td>
+                <td style="text-align:center; border: 1px solid #000; padding: 5px;">${row.tglTerakhirStr || '-'}</td>
+                <td style="border: 1px solid #000; padding: 5px;">${row.capaianAkhir || '-'}</td>
+              `;
+              tbody.appendChild(tr); 
+            });
+          } else {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 10px;">Tidak ada data rekapitulasi pada periode ini.</td></tr>`;
+          }
+        } else {
+          alert("Error: " + response.message);
+        }
+      })
+      .withFailureHandler(function(err) {
+        alert("Gagal memuat data laporan: " + err);
+      })
+      .getLaporanRekapQiroahDataForPrint(tglMulai, tglSelesai, ustadz, unit, kategori, filterVal);
+  };
+  </script>
+</body>
+</html>

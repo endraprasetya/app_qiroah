@@ -1,0 +1,3559 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+    
+    <meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"> 
+  <title>Aplikasi Qiroah Al Madinah</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  
+<style>
+  /* Reset dan Global Styles */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  body{
+    margin:0;
+    background:#f0f2f5;
+    min-height:100vh;
+}
+
+  /* Container Utama */
+  .container-app, .app-container {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    background-color: transparent;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width:768px){
+    .container-app{
+        max-width:860px;
+        margin:auto;
+    }
+  }
+
+  /* 1. Header Aplikasi - Tetap di atas dan rapi */
+  .top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px; 
+    background-color: #17a2b8; 
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  /* 2. Main Content - Memberi ruang agar tidak tertutup header */
+  #mainContent {
+    padding-top: 80px; 
+    min-height: 100vh;
+    width: 100%;
+    background-color: #ffffff;
+  }
+
+  /* 3. Menjaga agar konten tidak melebar di layar PC */
+  @media (min-width: 768px) {
+    .top-navbar {
+      width: 100%;
+      max-width: 860px; 
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .container-app {
+      max-width: 860px;
+    }
+  }
+
+  /* Form Login */
+  #authLayer {
+    width: 90%;
+    max-width: 400px;
+    margin: 8vh auto;
+    background-color: #ffffff;
+    padding: 30px 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  }
+
+  .page-content {
+    padding: 20px;
+    flex: 1;
+  }
+
+  /* Manajemen Halaman (Single Page Logic) */
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.3s ease-in; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Typography, Forms, & Buttons */
+  .header-title { text-align: center; margin-top: 20px; margin-bottom: 30px; }
+  .header-title h2 { color: #2c3e50; font-size: 24px; }
+  .header-title p { color: #7f8c8d; font-size: 14px; margin-top: 5px; }
+  .form-group { margin-bottom: 20px; }
+  label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #34495e; }
+  
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ced4da;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+  }
+  
+  input[type="text"]:focus, input[type="password"]:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%; padding: 14px; border: none; border-radius: 10px;
+    font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px;
+  }
+  .btn-primary { background-color: #28a745; color: white; }
+  .btn-primary:hover { background-color: #1e7b34; }
+  .btn-secondary { background-color: #e74c3c; color: white; margin-top: 20px;}
+
+  .message { padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px; text-align: center; }
+  .error { background-color: #fadbd8; color: #c0392b; border: 1px solid #f5b7b1; }
+  .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+  .hidden { display: none !important; }
+
+  /* Checklist & Siswa Styles */
+  .siswa-checklist-container { max-height: 300px; overflow-y: auto; border: 1px solid #ced4da; border-radius: 8px; padding: 10px; background-color: #f8f9fa; margin-top: 10px; }
+  .siswa-item { display: flex; align-items: center; padding: 8px 5px; border-bottom: 1px solid #e9ecef; cursor: pointer; }
+  .siswa-item:last-child { border-bottom: none; }
+  .siswa-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 12px; cursor: pointer; accent-color: #28a745; }
+  .siswa-item label { margin: 0; cursor: pointer; font-size: 14px; color: #333; width: 100%; }
+  .header-card { text-align: center; padding: 15px 0; border-bottom: 2px solid #f4f6f9; margin-bottom: 20px; }
+  .header-card h4 { color: #17a2b8; font-weight: bold; margin: 0; }
+  .header-card p { font-size: 12px; color: #6c757d; margin: 5px 0 0 0; }
+
+  /* Pastikan elemen lain tetap terbaca besar */
+  input, select, .btn, label {
+    font-size: 16px !important;
+  }
+
+  /* ======================================================== */
+  /* CSS RESPONSIF: LAYOUT HP VS LAPTOP/PC                    */
+  /* ======================================================== */
+
+  /* 1. Tampilan Mobile (HP) Layar Kecil (< 768px) */
+  @media (max-width:767px){
+    #mainContent{
+        width:100%;
+        margin-left:0;
+        padding: 70px 15px 20px; /* Jarak aman dari header mobile */
+    }
+  }
+
+  /* 2. Tampilan Desktop/Laptop (Berdampingan & Mepet) (>= 768px) */
+  @media (min-width: 768px) {
+    .container-app {
+      max-width: 860px; 
+    }
+  }
+
+  /* ======================================================== */
+  /* CSS CEKLIST PERSIAPAN QIROAH                             */
+  /* ======================================================== */
+  .prep-checklist-container {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: 5px;
+  }
+
+  .prep-item {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .prep-item:last-child {
+    border-bottom: none;
+  }
+
+  .prep-item label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 15px;
+    color: #495057;
+    font-weight: 500;
+    flex-grow: 1; 
+  }
+
+  .prep-item input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    accent-color: #28a745; 
+    margin-left: 10px;
+  }
+
+  /* Style Grafik Perkembangan Qiroah */
+  .custom-progress-container { background: #f8f9fa; border-left: 4px solid #28a745; }
+  .qiroah-bar { display: flex; align-items: center; margin-bottom: 8px; }
+  .qiroah-bar-label { font-size: 12px; font-weight: bold; margin-bottom: 2px; }
+  .qiroah-bar .progress { flex-grow: 1; height: 18px; border-radius: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,.1); }
+  .btn-xs { padding: .25rem .4rem; font-size: .75rem; line-height: 1.0; border-radius: .2rem; }
+
+  .form-check{ user-select:none; }
+  .form-check-label{ cursor:pointer; font-size:14px; color:#555; }
+  .form-check-input{ cursor:pointer; }
+  .form-check-label:hover{ color:#17a2b8; }
+
+  .btn-riwayat { padding: 0.1rem 0.4rem; font-size: 0.75rem; margin-left: 5px; border-radius: 3px; cursor: pointer; }
+  .d-none { display: none !important; }
+
+  .btn-group .btn.active { background-color: #17a2b8 !important; color: white !important; }
+
+  select, .form-control {
+    width: 100% !important; 
+    font-size: 16px !important; 
+    padding: 10px 12px !important;
+    min-height: 48px; 
+    border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    cursor: pointer;
+  }
+
+  .form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* Styling Khusus Judul Monitoring */
+  .monitoring-header-box {
+    background-color: #28a745 !important; 
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .monitoring-header-box h3, 
+  .monitoring-header-box h4 {
+    color: #ffffff !important; 
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .monitoring-header-box p {
+    color: #f8f9fa !important; 
+    font-size: 14px;
+    margin: 0;
+  }
+
+  /* Styling Khusus Halaman Penilaian Mobile Friendly */
+  .tugas-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  .tugas-card p { margin-bottom: 5px; }
+
+  .status-badge {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  /* Modal / Popup Buatan Sendiri */
+  .modal-custom {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-content-custom {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  /* 1. Kurangi Padding pada Card agar lebih padat */
+  .card { padding: 10px !important; margin-bottom: 10px !important; }
+  
+  /* 2. Optimasi Tabel agar tulisan lebih besar dan padding lebih sempit */
+  .table td, .table th { 
+    padding: 8px 4px !important; 
+    font-size: 13px !important; /* Ukuran yang lebih mudah dibaca */
+    vertical-align: middle !important;
+  }
+  
+  /* 3. Perbesar target sentuhan untuk input dan tombol */
+  .form-control { 
+    height: 45px !important; 
+    font-size: 16px !important; /* Mencegah zoom otomatis di iPhone saat input */
+  }
+  
+  /* 4. Kurangi padding header title agar tidak memakan tempat */
+  .header-card { padding: 10px 0 !important; }
+  
+  /* 5. Hilangkan margin besar di bagian atas */
+  .my-5 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
+
+   #mainContent{
+    width:100%;
+    padding:80px 15px 30px;
+} 
+
+/* === FIX MOBILE FRIENDLY === */
+@media (max-width: 767px) {
+
+  /* 1. HILANGIN RUANG KOSONG KIRI KAN */
+  body, #mainContent {
+    padding: 60px 8px 20px !important; /* dari 15px jadi 8px */
+  }
+  .container-app {
+    padding: 0 !important;
+  }
+
+  /* 2. MENU UTAMA JADI 1 KOLOM, TOMBOL GEDE */
+  .row { margin: 0 !important; }
+  .col-6 { 
+    flex: 0 0 100% !important; /* Paksa 1 kolom */
+    max-width: 100% !important;
+    padding: 5px 0 !important; /* Jarak antar tombol */
+  }
+  .card {
+    padding: 18px !important; /* Card lebih tebal biar gampang diklik */
+    border-radius: 12px !important;
+  }
+  .card h6 { font-size: 18px !important; } /* Tulisan menu gedein */
+  .card i { font-size: 2.5rem !important; } /* Icon gedein */
+
+  /* 3. FORM & TOMBOL FULL LEBAR JEMPOL */
+  .form-control, .btn {
+    font-size: 17px !important; /* Biar iPhone gak auto zoom */
+    padding: 14px !important;
+    height: auto !important;
+    min-height: 50px !important; /* Tinggi minimal 50px biar gampang tap */
+    border-radius: 10px !important;
+  }
+  label { font-size: 15px !important; }
+
+  /* 4. TABEL JADI SCROLL HORIZONTAL */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Biar smooth di iPhone */
+  }
+  .table td, .table th { 
+    padding: 10px 6px !important; 
+    font-size: 14px !important; 
+    white-space: nowrap; /* Biar gak pecah baris aneh */
+  }
+
+  /* 5. HEADER DIKECILIN DIKIT */
+  .top-navbar { height: 55px !important; }
+  .brand { font-size: 1.1rem !important; }
+}
+
+.riwayat-info-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border-left: 3px solid #17a2b8;
+  font-size: 14px !important;
+  text-align: left;
+}
+
+.riwayat-info-box div {
+  font-size: 14px !important;
+  font-weight: normal !important;
+}
+
+/* ======================================================== */
+/* CSS UNTUK MENORMALLKAN UKURAN TOMBOL DI RIWAYAT TERAKHIR */
+/* ======================================================== */
+
+.aksi-riwayat-container {
+  margin-top: 15px; /* Jarak dari info catatan/tugas */
+  display: flex;
+  justify-content: center; /* Tengahkan tombol */
+  gap: 10px; /* Jarak antar tombol */
+}
+
+/* Ini adalah class yang kita tambahkan di JS tadi */
+.btn-riwayat-kecil {
+  /* Paksa ukuran kecil */
+  padding: 4px 12px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  min-height: auto !important; /* Batalkan min-height 50px dari CSS global */
+  height: auto !important;
+  border-radius: 4px !important;
+  line-height: 1.5 !important;
+  /* Pastikan tidak ada efek zoom atau transisi aneh di iPhone */
+  -webkit-appearance: none;
+}
+
+/* Pastikan ikon di dalam tombol juga menyesuaikan ukuran */
+.btn-riwayat-kecil i {
+  font-size: 11px !important;
+  margin-right: 4px;
+}
+
+</style>
+</head>
+<body>
+
+  <div class="container-app">
+    
+    <div id="authLayer">
+      <div id="pageLogin" class="page-content">
+        <div class="text-center my-5">
+          <h2 class="text-info font-weight-bold">Aplikasi Qiroatul Quran</h2>
+          <p class="text-muted">Yayasan Al Madinah Surakarta</p>
+        </div>
+        <div class="card p-4 shadow-sm">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="loginUsername" class="form-control" placeholder="Masukkan Username">
+          </div>
+          <div class="form-group">
+          <label>Password</label>
+
+          <input
+            type="password"
+            id="loginPassword"
+            class="form-control"
+            placeholder="Masukkan Password">
+
+        <div class="form-check mt-2">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="showPassword"
+            onchange="togglePassword()">
+
+          <label class="form-check-label" for="showPassword">
+            Tampilkan Password
+            </label>
+          </div>
+
+        </div>
+          <button type="button" class="btn btn-info btn-block font-weight-bold" onclick="prosesLogin()">Masuk</button>
+          <div class="text-center mt-4">
+            <!-- PERBAIKAN 1: Ganti href="#" menjadi href="javascript:void(0)" -->
+            <p class="text-muted small">Guru baru? <a href="javascript:void(0)" onclick="bukaPage('Signup')" class="text-success font-weight-bold">Daftar di Sini</a></p>
+          </div>
+        </div>
+      </div>
+
+      <div id="pageSignup" class="page-content hidden">
+        <div class="header-card">
+          <h4>Pendaftaran Guru Baru</h4>
+          <p>Silakan lengkapi data identitas Anda</p>
+        </div>
+        <div class="card p-4 shadow-sm">
+          <div class="form-group">
+            <label>Nama Lengkap & Gelar</label>
+            <input type="text" id="regNama" class="form-control" placeholder="Contoh: Daffa Arifian Zaky, S.Pd">
+          </div>
+          <div class="form-group">
+            <label>Username Baru</label>
+            <input type="text" id="regUsername" class="form-control" placeholder="Buat username tanpa spasi">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="regPassword" class="form-control" placeholder="Buat password minimal 6 karakter">
+          </div>
+          <div class="form-group">
+            <label>Tugas Sebagai (Role)</label>
+            <select id="regRole" class="form-control">
+              <option value="Ustadz">Ustadz</option>
+              <option value="Ustadzah">Ustadzah</option>
+              <option value="Admin">Admin</option>
+              <option value="Kepala Sekolah">Kepala Sekolah</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Lokasi Unit Tugas</label>
+            <select id="regUnit" class="form-control">
+              <option value="Kartasura">SD Islam Terpadu Kartasura</option>
+              <option value="Nogosari">SD Islam Terpadu Nogosari</option>
+              <option value="Cepogo">SD Islam Terpadu Cepogo</option>
+            </select>
+          </div>
+          <!-- PERBAIKAN 2: Tambahkan type="button" agar tidak mentrigger submit form default browser -->
+          <button type="button" class="btn btn-success btn-block font-weight-bold" onclick="prosesDaftar()">Daftar Akun</button>
+          <button type="button" class="btn btn-light btn-block text-muted btn-sm mt-3" onclick="bukaPage('Login')">Kembali ke Login</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="appLayer" style="display: none;">
+      
+      <!-- Header Aplikasi (Pengganti Sidebar) -->
+      <div class="top-navbar bg-info text-white p-3 d-flex justify-content-between align-items-center shadow-sm w-100">
+        <div class="brand font-weight-bold" style="font-size: 1.2rem;">
+          <i class="fas fa-quran mr-2"></i> App Qiroah
+        </div>
+        <button class="btn btn-sm btn-light text-danger font-weight-bold" onclick="keluarAplikasi()">
+  <i class="fas fa-sign-out-alt"></i> Keluar
+</button>
+      </div>    
+
+          <div id="mainContent">
+        
+        <!-- START: HALAMAN MENU UTAMA -->
+<div id="pageMenuUtama" class="page-content">
+  <div class="header-card text-center mb-4">
+    <h4 id="txtNamaUstadzMenu">Ahlan wa Sahlan</h4>
+    <p>Silakan pilih menu layanan di bawah ini</p>
+  </div>
+
+  <div class="row">
+    <div class="col-6 mb-3 p-1">
+      <div class="card shadow-sm text-center p-3 h-100" onclick="navigasiMenu('Setoran')" style="cursor: pointer; border-radius: 12px;">
+        <i class="fas fa-file-signature fa-2x text-success mb-2"></i>
+        <h6 class="font-weight-bold m-0">Setoran</h6>
+      </div>
+    </div>
+    
+    <div class="col-6 mb-3 p-1">
+      <div class="card shadow-sm text-center p-3 h-100" onclick="navigasiMenu('Laporan')" style="cursor: pointer; border-radius: 12px;">
+        <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+        <h6 class="font-weight-bold m-0">Laporan</h6>
+      </div>
+    </div>
+
+    <!-- MENU PENGUJI DITAMBAHKAN DI SINI -->
+    <div class="col-6 mb-3 p-1">
+      <div class="card shadow-sm text-center p-3 h-100" onclick="navigasiMenu('Penguji')" style="cursor: pointer; border-radius: 12px;">
+        <i class="fas fa-clipboard-check fa-2x text-primary mb-2"></i>
+        <h6 class="font-weight-bold m-0">Penguji</h6>
+      </div>
+    </div>
+
+    <div class="col-6 mb-3 p-1">
+      <div class="card shadow-sm text-center p-3 h-100" onclick="navigasiMenu('Penilaian')" style="cursor: pointer; border-radius: 12px;">
+        <i class="fas fa-clipboard-list fa-2x text-warning mb-2"></i>
+        <h6 class="font-weight-bold m-0">Penilaian</h6>
+      </div>
+    </div>
+
+    <div class="col-12 mb-3 p-1">
+      <div class="card shadow-sm text-center p-3 h-100" onclick="navigasiMenu('Setting')" style="cursor: pointer; border-radius: 12px;">
+        <i class="fas fa-user-cog fa-2x text-secondary mb-2"></i>
+        <h6 class="font-weight-bold m-0">Setting</h6>
+      </div>
+    </div>
+
+    <!-- TOMBOL MONITORING ADMIN (Hanya Tampil Jika Admin) -->
+    <div class="col-12 mb-3 p-1" id="navMonitoringBtn" style="display: none;">
+      <div class="card shadow-sm text-center p-3 bg-primary text-white h-100" onclick="navigasiMenu('Monitoring')" style="cursor: pointer; border-radius: 12px;">
+        <i class="fas fa-desktop fa-2x mb-2"></i>
+        <h6 class="font-weight-bold m-0">Monitoring Ustadz</h6>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END: HALAMAN MENU UTAMA -->
+
+        <div id="pageSetoran" class="page-content hidden">
+          <!-- TOMBOL KEMBALI KE MENU -->
+          <div class="mb-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm font-weight-bold" onclick="bukaPage('MenuUtama')">
+              <i class="fas fa-arrow-left"></i> Kembali ke Menu
+            </button>
+          </div>
+
+            <div class="header-card">
+              <h4>Setoran Qiroah</h4>
+            <p>Form Input Setoran Qiroah Harian</p>
+          </div>
+          <div class="card p-3 shadow-sm">
+            
+            <div class="form-group">
+              <label class="font-weight-bold text-secondary">Nama Siswa Binaan</label>
+              <select id="optSiswa" class="form-control" style="border-left: 4px solid #28a745;">
+                <option value="">-- Pilih Siswa --</option>
+              </select>
+              <div id="boxRiwayat" class="alert alert-info mt-2 mb-0 py-2 small hidden">
+                <strong>Riwayat:</strong> <span id="txtRiwayat">Mencari data...</span>
+              </div>
+            </div>
+
+                <!-- Tombol Ajukan -->
+<button type="button" id="btnAjukan" class="btn btn-warning" style="width: 100%; margin-top: 10px; font-weight: bold;" onclick="bukaModalPengajuan()">
+  Ajukan Kenaikan Jilid
+</button>
+
+<!-- Modal Pop-Up Pengajuan -->
+<div id="modalPengajuan" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+  <div class="card shadow" style="width: 400px; max-width: 90%; background: #fff; border-radius: 8px; overflow: hidden;">
+    <div class="card-header bg-success text-white p-3" style="background-color: #28a745; color: white;">
+      <h5 class="mb-0"><i class="fas fa-paper-plane"></i> Ajukan Kenaikan Jilid</h5>
+    </div>
+    <div class="card-body p-3">
+      
+      <div class="form-group mb-3" style="margin-bottom: 12px;">
+        <label class="font-weight-bold" style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Nama Siswa</label>
+        <input type="text" id="modalNamaSiswa" class="form-control" readonly style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #e9ecef;">
+      </div>
+
+      <!-- Diubah menjadi Dropdown Jilid 2 sampai 5 -->
+      <div class="form-group mb-3" style="margin-bottom: 12px;">
+        <label class="font-weight-bold" style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Jilid yang Akan Diujikan</label>
+        <select id="modalJilidDiuji" class="form-control" style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #fff;">
+          <option value="">-- Pilih Jilid --</option>
+          <option value="At-Tartil Jilid 2">At-Tartil Jilid 2</option>
+          <option value="At-Tartil Jilid 3">At-Tartil Jilid 3</option>
+          <option value="At-Tartil Jilid 4">At-Tartil Jilid 4</option>
+          <option value="At-Tartil Jilid 5">At-Tartil Jilid 5</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-3" style="margin-bottom: 20px;">
+        <label class="font-weight-bold" style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Diajukan Oleh (Guru)</label>
+        <input type="text" id="modalDiajukanOleh" class="form-control font-weight-bold text-primary" readonly style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #e9ecef;">
+      </div>
+
+      <!-- Tombol Sejajar & Batal Merah Maroon (#800000) -->
+      <div class="row mt-4" style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+          <button type="button" class="btn btn-block py-2 font-weight-bold" onclick="tutupModalPengajuan()" style="width: 100%; padding: 10px; background: #800000; color: white; border: none; border-radius: 4px; cursor: pointer;">Batal</button>
+        </div>
+        <div style="flex: 1;">
+          <button type="button" id="btnKirimPengajuan" class="btn btn-success btn-block py-2 font-weight-bold" onclick="kirimPengajuanKenaikan()" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Kirim</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>      
+
+            <div class="form-group">
+              <label class="font-weight-bold text-secondary">Persiapan Qiroah</label>
+              <div class="prep-checklist-container">
+                <div class="prep-item">
+                  <label for="cekMurojaah">Murojaah di rumah</label>
+                  <input type="checkbox" id="cekMurojaah" value="Ya">
+                </div>
+                <div class="prep-item">
+                  <label for="cekMembacaSekolah">Membaca di sekolah</label>
+                  <input type="checkbox" id="cekMembacaSekolah" value="Ya">
+                </div>
+                <div class="prep-item">
+                  <label for="cekMurojaahTeman">Murojaah bersama teman</label>
+                  <input type="checkbox" id="cekMurojaahTeman" value="Ya">
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="font-weight-bold text-secondary">Jilid / Tingkatan Kitab</label>
+              <select id="inputJilid" class="form-control" onchange="cekPilihanJilid()">
+                <option value="At-Tartil Jilid 1">At-Tartil Jilid 1</option>
+                <option value="At-Tartil Jilid 2">At-Tartil Jilid 2</option>
+                <option value="At-Tartil Jilid 3">At-Tartil Jilid 3</option>
+                <option value="At-Tartil Jilid 4">At-Tartil Jilid 4</option>
+                <option value="At-Tartil Jilid 5">At-Tartil Jilid 5</option>
+                <option value="Al-Qur'an">Al-Qur'an (Talaqqi)</option>
+              </select>
+              <small id="infoJilid" class="text-info font-italic hidden">Pastikan mengisi detail Surah & Ayat dengan lengkap.</small>
+            </div>
+
+            <div class="form-group">
+              <label class="font-weight-bold text-secondary">Halaman / Surah & Ayat</label>
+              <input type="text" id="inputHalaman" class="form-control" placeholder="Contoh: Hal 15 atau Al-Baqarah: 1-10">
+            </div>
+
+            <div class="form-group">
+  <label class="font-weight-bold text-secondary">Status Kelancaran</label>
+  <select id="inputStatus" class="form-control">
+    <option value="Lancar">Lancar (Lanjut)</option>
+    <option value="Diulang">Belum Lancar (Diulang)</option>
+  </select>
+</div>
+
+            <div class="form-group">
+              <label class="font-weight-bold text-secondary">Catatan / Perbaikan Guru</label>
+              <textarea id="inputCatatan" class="form-control" rows="2" placeholder="Contoh: Dengung pada ikhfa' kurang ditahan, makhraj huruf 'Ain diperjelas."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="font-weight-bold text-secondary">Tugas Rumah / Target Mandiri</label>
+              <input type="text" id="inputTugasRumah" class="form-control" placeholder="Contoh: Lancarkan hal 15 di rumah">
+            </div>
+
+            <input type="hidden" id="editRowIndex" value="">
+            <input type="hidden" id="editIdQiroah" value="">
+<button id="btnSimpanSetoran" class="btn btn-success btn-block font-weight-bold mt-2" onclick="simpanSetoran()">
+  <i class="fas fa-save mr-1"></i> Simpan Setoran Siswa
+</button>
+<button id="btnBatalEdit" class="btn btn-secondary btn-block font-weight-bold mt-2 d-none" onclick="batalEdit()">
+  <i class="fas fa-times mr-1"></i> Batal Edit
+</button>
+            
+          </div>
+        </div>
+
+        <div id="pageLaporan" class="page-content hidden">
+  <div class="mb-3">
+    <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm font-weight-bold" onclick="bukaPage('MenuUtama')">
+      <i class="fas fa-arrow-left"></i> Kembali ke Menu
+    </button>
+  </div>
+  <div class="header-card"><h4>Laporan Perkembangan</h4></div>
+
+  <div class="mb-3">
+    <button class="btn btn-info btn-block btn-sm shadow-sm font-weight-bold" onclick="toggleTargetQiroah()">
+      <i class="fas fa-bullseye mr-1"></i> Lihat Standar Target Qiroah
+    </button>
+    
+    <div id="boxTargetQiroah" class="card border-info mt-2 shadow-sm d-none">
+      <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-2">
+        <span class="small font-weight-bold"><i class="fas fa-info-circle mr-1"></i> Acuan Target Qiroah</span>
+        <button type="button" class="close text-white font-weight-light" onclick="toggleTargetQiroah()">&times;</button>
+      </div>
+      <div class="card-body p-2 bg-light text-dark small">
+        <table class="table table-sm table-borderless mb-2" style="font-size: 13px;">
+          <tr><td><strong>Kelas 1</strong></td><td>: At Tartil 1-3</td></tr>
+          <tr><td><strong>Kelas 2</strong></td><td>: At Tartil 4-5</td></tr>
+          <tr><td><strong>Kelas 3</strong></td><td>: Al Quran</td></tr>
+        </table>
+        <button class="btn btn-xs btn-secondary btn-block py-1" onclick="toggleTargetQiroah()">Selesai Melihat / Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-3 shadow-sm mb-3">
+    <div class="form-row mb-2">
+      <div class="col-6">
+        <label class="small">Dari Tgl:</label>
+        <input type="date" id="tglMulai" class="form-control form-control-sm">
+      </div>
+      <div class="col-6">
+        <label class="small">Sampai Tgl:</label>
+        <input type="date" id="tglSelesai" class="form-control form-control-sm">
+      </div>
+    </div>
+    <div class="form-group mb-2">
+    <label class="small font-weight-bold text-primary">Jenis Laporan:</label>
+    <select id="jenisLaporan" class="form-control form-control-sm" onchange="ubahHeaderTabel()">
+      <option value="HARIAN">Rincian Harian Setoran</option>
+      <option value="REKAP">Rekapitulasi Capaian Bulanan</option>
+    </select>
+  </div>
+
+    <div class="form-group mb-2">
+      <label class="small">Kategori:</label>
+      <select id="kategoriFilter" class="form-control" onchange="updateSubFilter()">
+        <option value="SEMUA">Semua Data (Global)</option>
+        <option value="PER_KELAS">Per Kelas</option>
+        <option value="PER_SISWA">Per Siswa</option>
+      </select>
+    </div>
+    <div id="subFilterContainer" class="form-group" style="display:none;">
+      <label id="labelSub" class="small">Pilih...</label>
+      <select id="subFilterDropdown" class="form-control"></select>
+    </div>
+    <button class="btn btn-success btn-block mt-2" onclick="tarikDataLaporan()">Tampilkan Laporan</button>
+    <button id="btnCetakFormal" class="btn btn-outline-primary btn-block mt-2" onclick="cetakLaporanFormal()">
+      <i class="fas fa-print mr-1"></i> Cetak Laporan Formal
+    </button>
+  </div>
+  
+  <div id="wadahGrafikLaporan"></div>
+  
+  <!-- WADAH TABEL LAPORAN (Header tabel dibuat dinamis lewat JS) -->
+<div id="wadahTabelLaporan" class="table-responsive bg-white rounded shadow-sm p-2">
+  <table class="table table-sm table-bordered table-striped" style="font-size: 13px;">
+    <thead id="theadLaporan" class="thead-light">
+      <!-- Header akan berubah otomatis via JavaScript -->
+      </thead>
+      <tbody id="tbodyLaporan">
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">Silakan tentukan tanggal dan klik Tampilkan Laporan.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- HALAMAN KHUSUS PENGUJI -->
+<div id="pagePenguji" class="page-content hidden">
+  <div class="mb-3">
+    <!-- Ubah onclick menjadi memanggil fungsi pembersih -->
+    <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm font-weight-bold" onclick="kembaliKeMenuUtamaDariPenguji()">
+      <i class="fas fa-arrow-left"></i> Kembali ke Menu
+    </button>
+  </div>
+  
+  <!-- Header disamakan dengan warna hijau tua khas qiraah (#1b4332) -->
+  <div class="header-card text-white p-3 rounded mb-3 shadow-sm d-flex flex-column align-items-center justify-content-center text-center" style="background-color: #1b4332; min-height: 120px;">
+    <h4 class="m-0 font-weight-bold text-white"><i class="fas fa-clipboard-check mr-2"></i> Menu Khusus Penguji</h4>
+    <p class="m-0 text-white mt-1" style="font-size: 16px;">Daftar antrean dan penilaian ujian siswa</p>
+  </div>
+
+  <div class="card p-3 shadow-sm mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0 font-weight-bold text-dark" style="font-size: 16px;">Antrean Ujian</h5>
+      
+      <!-- Tombol Refresh -->
+      <button class="btn btn-info btn-sm font-weight-bold px-3 py-1 shadow-sm" style="font-size: 13px !important; min-height: auto !important; height: 36px !important;" onclick="muatDaftarAntrean()">
+        <i class="fas fa-sync-alt mr-1"></i> Refresh Antrean
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered text-center align-middle" style="min-width: 800px; font-size: 13px;">
+        <thead class="thead-light">
+          <tr>
+            <th width="5%">No</th>
+            <th width="15%">Tgl Diajukan</th>
+            <th width="15%">Diajukan Oleh</th>
+            <th width="25%">Nama Siswa</th>
+            <th width="10%">Jilid</th>
+            <th width="15%">Tgl Pelaksanaan</th>
+            <th width="15%">Nama Penguji</th>
+            <th width="15%">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tabelAntreanBody">
+          <tr>
+            <td colspan="8" class="text-muted py-3">Memuat data antrean...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- HALAMAN PENILAIAN -->
+<div id="pagePenilaian" class="page-content hidden">
+  <div class="mb-3">
+    <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm font-weight-bold" onclick="bukaPage('MenuUtama')">
+      <i class="fas fa-arrow-left"></i> Kembali ke Menu
+    </button>
+  </div>
+  <div class="header-card">
+    <h4>Penilaian Tugas Rumah</h4>
+    <p>Berikan nilai dan evaluasi untuk tugas siswa</p>
+  </div>
+  
+  <div class="card p-3 shadow-sm mb-4">
+    <div class="form-group">
+      <label class="font-weight-bold text-secondary">Pilih Siswa:</label>
+      <select id="selectSiswaPenilaian" class="form-control border-info" onchange="loadTugasSiswa()">
+        <option value="">-- Sedang memuat data siswa... --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tempat memunculkan kartu tugas -->
+  <div id="containerTugasSiswa">
+     <p class="text-center text-muted mt-3">Silakan pilih siswa terlebih dahulu.</p>
+  </div>
+</div>
+
+<!-- POPUP (MODAL) PENILAIAN -->
+<div id="modalPenilaian" class="modal-custom hidden">
+  <div class="modal-content-custom">
+    <h5 class="mb-3 text-primary border-bottom pb-2">Form Penilaian</h5>
+    <p class="mb-1 text-muted small">Tugas:</p>
+    <p id="labelTugasModal" class="font-weight-bold mb-3"></p>
+    
+    <!-- Input Tersembunyi untuk menyimpan ID -->
+    <input type="hidden" id="modalIdQiroah">
+
+    <label class="font-weight-bold">Nilai:</label>
+    <select id="inputNilaiTugas" class="form-control mb-3">
+      <option value="">-- Pilih Nilai --</option>
+      <option value="Bagus Sekali">Bagus Sekali</option>
+      <option value="Bagus">Bagus</option>
+      <option value="Cukup">Cukup</option>
+      <option value="Kurang">Kurang</option>
+    </select>
+
+    <label class="font-weight-bold">Catatan Guru:</label>
+    <textarea id="inputCatatanTugas" class="form-control mb-4" rows="3" placeholder="Tulis catatan (opsional)..."></textarea>
+
+    <div class="d-flex justify-content-between">
+      <button class="btn btn-secondary px-4" onclick="tutupModalPenilaian()">Batal</button>
+      <button class="btn btn-success px-4" id="btnSimpanNilai" onclick="simpanPenilaianJS()">Simpan</button>
+    </div>
+  </div>
+</div>  
+
+        <div id="pageSetting" class="page-content hidden">
+          <div class="mb-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm font-weight-bold" onclick="bukaPage('MenuUtama')">
+              <i class="fas fa-arrow-left"></i> Kembali ke Menu
+            </button>
+          </div>
+          <div class="header-card">
+            <h4>Setting Kelompok Binaan</h4>
+            <p>Pilih siswa yang masuk ke dalam halaqah Anda</p>
+          </div>
+          <div class="card p-3 shadow-sm mb-3 bg-light">
+            <span class="small text-muted">Identitas Akun:</span>
+            <strong id="infoUserNama">---</strong>
+            <span class="small text-muted mt-1">Unit Tugas: <span id="infoUserUnit" class="badge badge-info">---</span></span>
+          </div>
+          <div class="form-group">
+            <label for="filterKelasSetup">Pilih Tingkat Kelas</label>
+            <select id="filterKelasSetup" class="form-control" onchange="loadSiswaUntukSetup()">
+              <option value="">-- Pilih Kelas --</option>
+              <option value="1A">Kelas 1A</option>
+              <option value="1B">Kelas 1B</option>
+              <option value="1C">Kelas 1C</option>
+              <option value="1D">Kelas 1D</option>
+              <option value="2A">Kelas 2A</option>
+              <option value="2B">Kelas 2B</option>
+              <option value="2C">Kelas 2C</option>
+              <option value="2D">Kelas 2D</option>
+              <option value="3A">Kelas 3A</option>
+              <option value="3B">Kelas 3B</option>
+              <option value="3C">Kelas 3C</option>
+              <option value="3D">Kelas 3D</option>
+              <option value="4A">Kelas 4A</option>
+              <option value="4B">Kelas 4B</option>
+              <option value="4C">Kelas 4C</option>
+              <option value="4D">Kelas 4D</option>
+              <option value="5A">Kelas 5A</option>
+              <option value="5B">Kelas 5B</option>
+              <option value="5C">Kelas 5C</option>
+              <option value="5D">Kelas 5D</option>
+              <option value="6A">Kelas 6A</option>
+              <option value="6B">Kelas 6B</option>
+              <option value="6C">Kelas 6C</option>
+              <option value="6D">Kelas 6D</option>
+            </select>
+          </div>
+          <div id="boxChecklistSiswa" class="hidden">
+            <label class="font-weight-bold text-secondary">Centang Nama Siswa Diampu:</label>
+            <div class="siswa-checklist-container" id="daftarSiswaChecklist"></div>
+            <button class="btn btn-primary btn-block font-weight-bold mt-4" onclick="simpanSettingSiswa()">Simpan Kelompok Binaan</button>
+          </div>
+        </div>
+
+        <!-- START: HALAMAN MONITORING ADMIN -->
+<div id="pageMonitoring" class="page-content hidden">
+  <div class="mb-3">
+    <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm font-weight-bold" onclick="bukaPage('MenuUtama')">
+      <i class="fas fa-arrow-left"></i> Kembali ke Menu
+    </button>
+  </div>
+  <div class="monitoring-header-box">
+  <h3>Monitoring Kinerja Ustadz/ah</h3>
+  <p>Pantau keaktifan input setoran harian berdasarkan rentang waktu dan unit</p>
+</div>
+
+  <!-- Pilihan Filter Tanggal -->
+  <div class="form-group">
+    <label>Pilih Rentang Tanggal Monitoring</label>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <!-- Hapus onchange agar tidak otomatis meload data -->
+      <input type="date" id="inputTglMulai" class="form-control" style="flex: 1;">
+      <span style="font-weight: bold;">s/d</span>
+      <input type="date" id="inputTglAkhir" class="form-control" style="flex: 1;">
+    </div>
+    <!-- Form Cek Perkembangan Kelas -->
+<div class="card mt-4 shadow-sm border-0">
+  <div class="card-body bg-light rounded">
+    <h6 class="fw-bold text-primary"><i class="fas fa-chart-line"></i> Pantau Perkembangan Kelas</h6>
+    
+    <div class="input-group mt-2" style="max-width: 450px;">
+      <select id="selectFilterKelas" class="form-select fw-bold text-secondary">
+        <option value="">-- Pilih Kelas --</option>
+        <optgroup label="Kelas 1">
+          <option value="1A">Kelas 1A</option><option value="1B">Kelas 1B</option>
+          <option value="1C">Kelas 1C</option><option value="1D">Kelas 1D</option>
+        </optgroup>
+        <optgroup label="Kelas 2">
+          <option value="2A">Kelas 2A</option><option value="2B">Kelas 2B</option>
+          <option value="2C">Kelas 2C</option><option value="2D">Kelas 2D</option>
+        </optgroup>
+        <optgroup label="Kelas 3">
+          <option value="3A">Kelas 3A</option><option value="3B">Kelas 3B</option>
+          <option value="3C">Kelas 3C</option><option value="3D">Kelas 3D</option>
+        </optgroup>
+        <optgroup label="Kelas 4">
+          <option value="4A">Kelas 4A</option><option value="4B">Kelas 4B</option>
+          <option value="4C">Kelas 4C</option><option value="4D">Kelas 4D</option>
+        </optgroup>
+        <optgroup label="Kelas 5">
+          <option value="5A">Kelas 5A</option><option value="5B">Kelas 5B</option>
+          <option value="5C">Kelas 5C</option><option value="5D">Kelas 5D</option>
+        </optgroup>
+        <optgroup label="Kelas 6">
+          <option value="6A">Kelas 6A</option><option value="6B">Kelas 6B</option>
+          <option value="6C">Kelas 6C</option><option value="6D">Kelas 6D</option>
+        </optgroup>
+      </select>
+      <button class="btn btn-primary fw-bold" onclick="cekPerkembanganKelas()">Cek Kelas</button>
+    </div>
+
+    <!-- START: GRAFIK & KARTU RINGKASAN PERKEMBANGAN KELAS -->
+    <div id="areaStatistikKelas" class="mt-4 p-3 bg-white rounded shadow-sm border hidden">
+      <div class="row g-2 text-center mb-3">
+        <div class="col-4">
+          <div class="p-2 rounded" style="background-color: #e0f2fe; border: 1px solid #bae6fd;">
+            <small class="fw-bold text-primary d-block">Total Siswa</small>
+            <span class="fs-4 fw-bold text-primary" id="statTotalSiswa">0</span>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="p-2 rounded" style="background-color: #d1e7dd; border: 1px solid #badbcc;">
+            <small class="fw-bold text-success d-block">Sudah Setor / Aktif</small>
+            <span class="fs-4 fw-bold text-success" id="statSudahSetor">0</span>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="p-2 rounded" style="background-color: #f8d7da; border: 1px solid #f5c2c7;">
+            <small class="fw-bold text-danger d-block">Belum Setor</small>
+            <span class="fs-4 fw-bold text-danger" id="statBelumSetor">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Progress Bar -->
+      <div>
+        <div class="d-flex justify-content-between mb-1" style="font-size: 13px;">
+          <span class="fw-bold text-secondary">Persentase Keaktifan Kelas:</span>
+          <span class="fw-bold text-success" id="textPersenKelas">0%</span>
+        </div>
+        <div class="progress" style="height: 16px; border-radius: 8px; background-color: #e9ecef;">
+          <div id="barPersenKelas" class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+    <!-- END: GRAFIK & KARTU RINGKASAN PERKEMBANGAN KELAS -->
+
+    <!-- START: KARTU PANTAU TUGAS DI RUMAH -->
+    <div class="card mt-4 shadow-sm border-0 border-left-warning">
+      <div class="card-body bg-light rounded">
+        <h6 class="fw-bold text-warning" style="color: #d97706 !important;"><i class="fas fa-book-reader"></i> Pantau Tugas di Rumah</h6>
+        
+        <div class="input-group mt-2" style="max-width: 450px;">
+          <select id="selectFilterKelasTugas" class="form-select fw-bold text-secondary">
+            <option value="">-- Semua Kelas --</option>
+            <!-- Opsi Kelas -->
+            <optgroup label="Kelas 1"><option value="1A">1A</option><option value="1B">1B</option><option value="1C">1C</option><option value="1D">1D</option></optgroup>
+            <optgroup label="Kelas 2"><option value="2A">2A</option><option value="2B">2B</option><option value="2C">2C</option><option value="2D">2D</option></optgroup>
+            <optgroup label="Kelas 3"><option value="3A">3A</option><option value="3B">3B</option><option value="3C">3C</option><option value="3D">3D</option></optgroup>
+            <optgroup label="Kelas 4"><option value="4A">4A</option><option value="4B">4B</option><option value="4C">4C</option><option value="4D">4D</option></optgroup>
+            <optgroup label="Kelas 5"><option value="5A">5A</option><option value="5B">5B</option><option value="5C">5C</option><option value="5D">5D</option></optgroup>
+            <optgroup label="Kelas 6"><option value="6A">6A</option><option value="6B">6B</option><option value="6C">6C</option><option value="6D">6D</option></optgroup>
+          </select>
+          <button class="btn btn-warning fw-bold text-dark" onclick="cekTugasRumah()">Lihat Tugas</button>
+        </div>
+
+        <!-- Area Tabel Tugas -->
+        <div id="areaTabelTugas" class="mt-3 table-responsive" style="display: none;">
+  <table class="table table-bordered table-striped table-sm text-center bg-white" style="font-size: 13px;">
+    <thead style="background-color: #fef3c7;">
+      <tr>
+        <th width="5%">No</th>
+        <th width="20%">Nama Siswa</th>
+        <th width="25%">Tugas di Rumah</th>
+        <th width="15%">Tanggal</th> <!-- Kolom Baru -->
+        <th width="20%">Nama Ustadz</th>
+        <th width="15%">Status</th>
+      </tr>
+    </thead>
+    <tbody id="tbodyTugasRumah">
+      <!-- Data akan dirender di sini -->
+    </tbody>
+  </table>
+</div>
+      </div>
+    </div>
+    <!-- END: KARTU PANTAU TUGAS DI RUMAH -->
+
+    <!-- Area Tabel Perkembangan -->
+    <div id="tabelPerkembanganKelas" class="mt-3 table-responsive"></div>
+  </div>
+</div>
+    <!-- Tambahan tombol untuk mengeksekusi pencarian -->
+    <button class="btn btn-primary btn-block font-weight-bold mt-3" onclick="loadMonitoringByDate()">
+      <i class="fas fa-search mr-1"></i> Tampilkan Monitoring
+    </button>
+  </div>
+
+  <!-- Ringkasan Statistik Singkat -->
+  <div class="row mb-3 px-2">
+    <div class="col-6 p-1">
+      <div class="card bg-success text-white p-2 text-center shadow-sm" style="border-radius: 8px;">
+        <span class="small">Ustadz Aktif</span>
+        <h3 id="statUstadzAktif" class="m-0 font-weight-bold">0</h3>
+      </div>
+    </div>
+    <div class="col-6 p-1">
+      <div class="card bg-info text-white p-2 text-center shadow-sm" style="border-radius: 8px;">
+        <span class="small">Total Setoran</span>
+        <h3 id="statTotalSetoran" class="m-0 font-weight-bold">0</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-2 mt-4">
+    <h6 class="fw-bold text-primary m-0"><i class="fas fa-users"></i> Data Keaktifan Ustadz/ah</h6>
+    <button class="btn btn-sm btn-outline-danger fw-bold" onclick="tutupMonitoringUstadz()">
+        <i class="fas fa-times"></i> Tutup
+    </button>
+</div>
+
+  <!-- Tabel Monitoring -->
+  <div class="table-responsive bg-white rounded shadow-sm p-2">
+    <table class="table table-sm table-bordered table-striped" style="font-size: 13px;">
+      <thead class="thead-light">
+        <tr>
+          <th width="5%" class="text-center">No</th>
+          <th width="40%">Nama Ustadz/ah</th>
+          <th width="20%" class="text-center">Unit</th>
+          <th width="15%" class="text-center">Jumlah Input</th>
+          <th width="20%" class="text-center">Status</th>
+          <th width="15%" class="text-center">Rekap</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyMonitoring">
+        <tr>
+          <td colspan="5" class="text-center text-muted py-3">Memuat data monitoring...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- END: HALAMAN MONITORING ADMIN -->
+
+      </div> 
+    </div> 
+  </div> 
+      
+<script>
+    var currentUser = { username: "", role: "", targetID: "", nama: "", unit: "", statusSetup: "" };
+    var barisAudioAktif = null;
+    var dataAudioGlobal = []; // Menyimpan data audio asli dari server untuk fitur pencarian/filter
+    var currentUser = null;
+
+    function bukaPage(pageName) {
+      // Ditambahkan 'pageMenuUtama' dan 'pagePenilaian' agar tidak hilang saat di-klik
+      var semuaHalaman = ['pageLogin', 'pageSignup', 'pageMenuUtama', 'pageLaporan', 'pageSetting', 'pageSetoran', 'pagePenilaian', 'pageMonitoring', 'pagePenguji'];
+      
+      semuaHalaman.forEach(function(id) {
+        var el = document.getElementById(id);
+        if(el) el.classList.add('hidden'); // Sembunyikan semuanya terlebih dahulu
+      });
+      
+      // Baru kemudian tampilkan HANYA halaman yang dituju
+      var target = document.getElementById('page' + pageName);
+      if(target) target.classList.remove('hidden');
+    }
+
+    function inisialisasiUISetelahLogin(userData) {
+  currentUser = userData;
+  
+  // Update identitas akun langsung setelah login berhasil
+  updateIdentitasAkun();
+  
+  var navbar = document.getElementById('mainNavbar');
+  if(navbar) navbar.classList.remove('hidden');
+  document.getElementById('pageLogin').classList.add('hidden');
+
+  // START: LOGIKA BUKA GEMBOK TOMBOL ADMIN
+  let peranUser = currentUser.role ? currentUser.role.toLowerCase() : "";
+  
+  // Jika role mengandung kata 'admin' atau 'kepala', maka tombol dimunculkan
+  if (peranUser.includes('admin') || peranUser.includes('kepala')) {
+    document.getElementById('navMonitoringBtn').style.display = 'block';
+  } else {
+    document.getElementById('navMonitoringBtn').style.display = 'none';
+  }
+  // END: LOGIKA BUKA GEMBOK TOMBOL ADMIN
+
+  // UBAH DEFAULT HALAMAN SETELAH LOGIN KE MENU UTAMA:
+  bukaPage('MenuUtama'); 
+  
+  // Sisipkan nama ustadz/ustadzah di sapaan menu utama
+  if (document.getElementById('txtNamaUstadzMenu')) {
+    document.getElementById('txtNamaUstadzMenu').innerHTML = "Ahlan wa Sahlan, " + (currentUser.nama || "");
+  }
+}
+
+function navigasiMenu(menuName) {
+  bukaPage(menuName);
+
+  if (menuName === 'Laporan') {
+    inisialisasiHalamanLaporan();
+  } else if (menuName === 'Setting') {
+    updateIdentitasAkun(); 
+  } else if (menuName === 'Monitoring') {
+    initHalamanMonitoring(); 
+  } else if (menuName === 'Penilaian') {
+    if (typeof initHalamanPenilaian === 'function') {
+      initHalamanPenilaian();
+    }
+  } else if (menuName === 'Ujian') {
+    loadDaftarSiswaUjian(); 
+  } else if (menuName === 'Penguji') {
+    // Tambahkan inisialisasi khusus penguji di sini jika ada (misal: loadAntreanUjian())
+  }
+}
+
+    function updateIdentitasAkun() {
+  // Ambil namaLengkap dari Firestore, jika tidak ada baru gunakan .nama
+  var namaUser = currentUser.namaLengkap || currentUser.nama || "---";
+  var unitUser = currentUser.unit || "---";
+  
+  var elNama = document.getElementById('infoUserNama');
+  var elUnit = document.getElementById('infoUserUnit');
+  
+  if (elNama) elNama.innerText = namaUser;
+  if (elUnit) elUnit.innerText = unitUser;
+}
+
+    // B. PROSES PEMBUATAN AKUN BARU (SIGN UP)
+    function prosesDaftar() {
+      var nama = document.getElementById('regNama').value.trim();
+      var username = document.getElementById('regUsername').value.trim();
+      var password = document.getElementById('regPassword').value.trim();
+      var role = document.getElementById('regRole').value;
+      var unit = document.getElementById('regUnit').value;
+      
+      if(!nama || !username || !password) {
+        alert("Mohon lengkapi seluruh kolom pendaftaran!");
+        return;
+      }
+      
+      var btnDaftar = document.querySelector('#pageSignup button');
+      btnDaftar.innerText = "Mendaftar...";
+      btnDaftar.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          btnDaftar.innerText = "Daftar Akun";
+          btnDaftar.disabled = false;
+          alert(response.message);
+          
+          if(response.success) {
+            // Kosongkan form setelah pendaftaran sukses
+            document.getElementById('regNama').value = '';
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regPassword').value = '';
+            
+            // Otomatis kembali ke halaman Login
+            bukaPage('Login');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btnDaftar.innerText = "Daftar Akun";
+          btnDaftar.disabled = false;
+          alert("Error: " + err.message);
+        })
+        .prosesDaftarServer(nama, username, password, role, unit);
+    }
+
+    // C. PROSES MASUK UTAMA (LOGIN)
+function prosesLogin() {
+  var user = document.getElementById('loginUsername').value.trim();
+  var pass = document.getElementById('loginPassword').value.trim();
+  
+  if(!user || !pass) { 
+    alert("Username dan Password tidak boleh kosong!"); 
+    return; 
+  }
+  
+  var btnLogin = document.querySelector('#pageLogin button');
+  var textAwal = btnLogin.innerText;
+  btnLogin.innerText = "Memverifikasi...";
+  btnLogin.disabled = true;
+
+  google.script.run
+    .withSuccessHandler(function(response) {
+      btnLogin.innerText = textAwal;
+      btnLogin.disabled = false;
+
+      if (response.success) {
+        // 1. Simpan data user
+        currentUser = {
+          username: response.username || "",
+          role: response.role || "",
+          targetID: response.targetID || "",
+          nama: response.nama || "",
+          unit: response.unit || "",
+          statusSetup: response.statusSetup || ""
+        };
+
+        // 2. Tampilkan layer aplikasi
+        document.getElementById('authLayer').style.display = 'none';
+        document.getElementById('appLayer').style.display = 'block';
+
+        // 3. PANGGIL INISIALISASI (Ini akan menangani pindah halaman ke MenuUtama)
+        inisialisasiUISetelahLogin(currentUser);
+        
+        // PERBAIKAN: Pisahkan jalur Admin dan Ustadz
+        let peran = currentUser.role.toLowerCase();
+        if (peran.includes('admin') || peran.includes('kepala')) {
+          // Jika Admin, JANGAN panggil loadSiswaBinaanGuru. 
+          // Langsung inisialisasi halaman monitoring saja.
+          if (typeof initHalamanMonitoring === "function") {
+             initHalamanMonitoring();
+          }
+        // TAMBAHKAN BARIS INI AGAR LANGSUNG PINDAH HALAMAN
+          bukaPage('Monitoring'); 
+        } else {
+          // Jika Ustadz biasa, baru muat siswa binaannya
+          loadSiswaBinaanGuru(); 
+        }
+        
+        // 4. Jalankan load data di background
+        loadSiswaBinaanGuru(); 
+        
+      } else {
+        alert("Login gagal: " + response.message);
+      }
+    })
+    .withFailureHandler(function(err) {
+      btnLogin.innerText = textAwal;
+      btnLogin.disabled = false;
+      alert("Error sistem server: " + err.message);
+    })
+    .prosesLoginServer(user, pass);
+}
+
+    // D. LOGIKA SELEKSI DATA SISWA (SETUP)
+    function loadSiswaUntukSetup() {
+  var kelasTerpilih = document.getElementById('filterKelasSetup').value;
+  var containerDaftar = document.getElementById('daftarSiswaChecklist');
+  var box = document.getElementById('boxChecklistSiswa');
+  
+  if(!kelasTerpilih) {
+    box.classList.add('hidden'); // Sembunyikan jika kelas belum dipilih
+    return;
+  }
+  
+  box.classList.remove('hidden'); // Tampilkan box jika kelas dipilih
+  containerDaftar.innerHTML = "<div>Memuat siswa...</div>";
+  
+  google.script.run
+    .withSuccessHandler(function(listSiswa) {
+      containerDaftar.innerHTML = ""; 
+      if(listSiswa.length === 0) {
+        containerDaftar.innerHTML = "<div>Tidak ada data siswa untuk kelas ini.</div>";
+        return;
+      }
+      
+      listSiswa.forEach(function(siswa) {
+        var divItem = document.createElement('div');
+        divItem.className = "p-2 border-bottom"; // Tambah sedikit style
+        divItem.innerHTML = "<input type='checkbox' id='chk_"+siswa.idSiswa+"' value='"+siswa.idSiswa+"' "+(siswa.isChecked?'checked':'')+"> <label for='chk_"+siswa.idSiswa+"' class='ml-2 mb-0'>"+siswa.namaSiswa+"</label>";
+        containerDaftar.appendChild(divItem);
+      });
+    })
+    .getSiswaUntukSetup(currentUser.unit, kelasTerpilih, currentUser.targetID);
+}
+
+function simpanSettingSiswa() {
+  var kelasTerpilih = document.getElementById('filterKelasSetup').value;
+  var checkboxes = document.querySelectorAll('#daftarSiswaChecklist input:checked');
+  var listIDSiswa = [];
+  
+  checkboxes.forEach(function(el) {
+    listIDSiswa.push(el.value);
+  });
+  
+  if(listIDSiswa.length === 0) {
+    alert("Silakan pilih minimal satu siswa!");
+    return;
+  }
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      alert(res.message);
+      loadSiswaBinaanGuru(); // Refresh dropdown di halaman utama
+    })
+    .simpanSettingSiswaServer(currentUser.targetID, listIDSiswa, currentUser.unit, kelasTerpilih);
+}
+
+    // E. DROPDOWN SISWA BINAAN
+    function loadSiswaBinaanGuru() {
+      var selectSiswa = document.getElementById('optSiswa');
+      if (!selectSiswa) return;
+      
+      selectSiswa.innerHTML = "<option value=''>-- Memuat Siswa Binaan... --</option>";
+      
+      google.script.run
+        .withSuccessHandler(function(listBinaan) {
+          selectSiswa.innerHTML = "<option value=''>-- Pilih Siswa --</option>";
+          
+          if (!listBinaan || listBinaan.length === 0) {
+            selectSiswa.innerHTML = "<option value=''>-- Belum ada siswa binaan --</option>";
+            alert("Kelompok binaan Anda masih kosong. Silakan tentukan siswa di menu Setting terlebih dahulu.");
+            return;
+          }
+          
+          listBinaan.forEach(function(siswa) {
+            var opt = document.createElement('option');
+            opt.value = siswa.idSiswa;
+            opt.innerText = siswa.idSiswa + " - " + siswa.namaSiswa + " (" + (siswa.kelas || "") + ")";
+            selectSiswa.appendChild(opt);
+          });
+
+          inisialisasiAutoRecall(); 
+        })
+        .withFailureHandler(function(err) {
+          selectSiswa.innerHTML = "<option value=''>-- Gagal Memuat --</option>";
+          alert("Gagal mengambil data siswa binaan: " + err.message);
+        })
+        .getSiswaBinaanServer(currentUser.targetID, currentUser.role); 
+    }
+
+     // Variabel global untuk menyimpan data riwayat terakhir sementara
+var dataRiwayatTerakhir = null;
+
+// G. TRIGGER AUTO-RECALL (VIA FIRESTORE CLIENT SDK)
+function inisialisasiAutoRecall() {
+  var selectSiswa = document.getElementById('optSiswa');
+  if (!selectSiswa) return;
+
+  selectSiswa.addEventListener('change', async function() {
+    var idSiswa = this.value;
+    var boxRiwayat = document.getElementById('boxRiwayat');
+    var txtRiwayat = document.getElementById('txtRiwayat');
+
+    if (typeof batalEdit === "function") batalEdit(); 
+
+    if (!idSiswa) {
+      if (boxRiwayat) boxRiwayat.classList.add('hidden');
+      return;
+    }
+
+    if (boxRiwayat) boxRiwayat.classList.remove('hidden');
+    if (txtRiwayat) txtRiwayat.innerHTML = "⏳ <span class='text-muted small'>Mengambil data super cepat dari Firestore...</span>";
+
+    try {
+      // 🚀 PANGGIL FIRESTORE LANGSUNG (Menggantikan google.script.run)
+      const res = await window.ambilRiwayatTerakhirDariFirestore(idSiswa);
+
+      if (!txtRiwayat) return;
+        
+      if (res.ditemukan) {
+        dataRiwayatTerakhir = res; 
+
+        var aksiHtml = `
+          <div class="aksi-riwayat-container mt-2">
+            <button class="btn btn-warning text-dark btn-riwayat-kecil mr-1" onclick="mulaiEdit()">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="btn btn-danger btn-riwayat-kecil" onclick="hapusRiwayat()">
+              <i class="fas fa-trash"></i> Hapus
+            </button>
+          </div>
+        `;
+
+        var tambahanInfo = "";
+        var adaCatatan = res.catatan && res.catatan.trim() !== "-" && res.catatan.trim() !== "";
+        var adaTugas = res.tugasRumah && res.tugasRumah.trim() !== "-" && res.tugasRumah.trim() !== "";
+
+        if (adaCatatan || adaTugas) {
+          tambahanInfo += `
+            <div style="margin-top: 10px; padding: 10px 12px; background-color: #ffffff; border-radius: 6px; border-left: 3px solid #17a2b8; box-shadow: 0 1px 2px rgba(0,0,0,0.05); text-align: left;">
+          `;
+          
+          if (adaCatatan) {
+            tambahanInfo += `<div style="margin-bottom: ${adaTugas ? '8px' : '0'}; font-size: 14px !important; line-height: 1.4; color: #333333;"><strong style="font-size: 14px !important;">📝 Catatan:</strong> <span style="font-size: 14px !important; font-weight: normal;">${res.catatan}</span></div>`;
+          }
+          
+          if (adaTugas) {
+            tambahanInfo += `<div style="font-size: 14px !important; line-height: 1.4; color: #d35400;"><strong style="font-size: 14px !important;">🏠 Tugas:</strong> <span style="font-size: 14px !important; font-weight: normal;">${res.tugasRumah}</span></div>`;
+          }
+          tambahanInfo += `</div>`;
+        }
+
+        txtRiwayat.innerHTML = "📚 Terakhir: <strong class='text-primary'>" + res.jilid + "</strong> - <span>" + res.halaman + "</span> <span class='badge badge-info ml-1'>" + res.status + "</span>" + tambahanInfo + aksiHtml;
+          
+      } else {
+        dataRiwayatTerakhir = null;
+        txtRiwayat.innerHTML = "ℹ️ <span class='text-muted'>Belum ada riwayat setoran sebelumnya.</span>";
+      }
+
+    } catch (error) {
+      if (txtRiwayat) txtRiwayat.innerHTML = "❌ <span class='text-danger'>Gagal memuat data: " + error.message + "</span>";
+    }
+  });
+}
+
+// --- FUNGSI BARU UNTUK HANDLE FORM (SUDAH DIPERBAIKI) ---
+function mulaiEdit() {
+  if (!dataRiwayatTerakhir) return;
+  
+  // 1. Isi input hidden (Sangat krusial untuk Update & Hapus)
+  // Menangkap ID document Firestore (bisa id, idQiroah, atau id_dokumen)
+  var docId = dataRiwayatTerakhir.id || dataRiwayatTerakhir.idQiroah || dataRiwayatTerakhir.id_dokumen || "";
+  document.getElementById('editRowIndex').value = dataRiwayatTerakhir.rowIndex || "";
+  
+  if (document.getElementById('editIdQiroah')) {
+      document.getElementById('editIdQiroah').value = docId;
+  }
+
+  // 2. Isi form text dengan fallback nama variabel dari Firestore
+  document.getElementById('inputJilid').value = dataRiwayatTerakhir.jilid_kitab || dataRiwayatTerakhir.jilid || "";
+  document.getElementById('inputHalaman').value = dataRiwayatTerakhir.halaman || "";
+  document.getElementById('inputCatatan').value = dataRiwayatTerakhir.catatan || "";
+  
+  var elTugas = document.getElementById('inputTugasRumah');
+  if(elTugas) elTugas.value = dataRiwayatTerakhir.tugas_rumah || dataRiwayatTerakhir.tugasRumah || "";
+
+  // 3. 🚀 PERBAIKAN STATUS KELANCARAN (Dropdown)
+  var valStatus = dataRiwayatTerakhir.status_lancar || dataRiwayatTerakhir.status || "";
+  var selStatus = document.getElementById('inputStatus');
+  
+  if (selStatus && valStatus) {
+      valStatus = String(valStatus).trim().toLowerCase();
+      selStatus.selectedIndex = -1; // Kosongkan dulu
+      
+      // Cari opsi yang mengandung teks dari database (misal: "lancar" akan cocok dengan "Lancar (Lanjut)")
+      for (var i = 0; i < selStatus.options.length; i++) {
+          var optText = selStatus.options[i].text.toLowerCase();
+          var optValue = selStatus.options[i].value.toLowerCase();
+          
+          if (optText.includes(valStatus) || optValue.includes(valStatus)) {
+              selStatus.selectedIndex = i;
+              break;
+          }
+      }
+  }
+
+  // 4. 🚀 PERBAIKAN CHECKBOX TUGAS
+  // Fungsi kecil untuk mengecek string 'Ya' / 'True'
+  function isChecked(val) {
+      var v = val ? String(val).trim().toLowerCase() : "";
+      return (v === 'ya' || v === 'true' || v === '1');
+  }
+  
+  // Cocokkan dengan nama field yang ada di Firestore (Screenshot 470)
+  var cekMurojaah = document.getElementById('cekMurojaah');
+  if(cekMurojaah) cekMurojaah.checked = isChecked(dataRiwayatTerakhir.murojaah_di_rumah || dataRiwayatTerakhir.murojaah);
+
+  var cekMembaca = document.getElementById('cekMembacaSekolah');
+  if(cekMembaca) cekMembaca.checked = isChecked(dataRiwayatTerakhir.membaca_di_sekolah || dataRiwayatTerakhir.membacaSekolah);
+
+  var cekMurojaahTeman = document.getElementById('cekMurojaahTeman');
+  if(cekMurojaahTeman) cekMurojaahTeman.checked = isChecked(dataRiwayatTerakhir.murojaah_bersama_teman || dataRiwayatTerakhir.murojaahTeman);
+
+  // 5. Ubah Tombol Simpan jadi Update
+  var btnSimpan = document.getElementById('btnSimpanSetoran');
+  if (btnSimpan) {
+      btnSimpan.innerHTML = "<i class='fas fa-sync-alt mr-1'></i> Update Setoran";
+      btnSimpan.classList.replace('btn-success', 'btn-warning');
+  }
+  
+  // 6. Munculkan tombol Batal
+  var btnBatal = document.getElementById('btnBatalEdit');
+  if (btnBatal) btnBatal.classList.remove('d-none');
+}
+
+function batalEdit() {
+  document.getElementById('editRowIndex').value = "";
+  // Reset juga hidden id nya
+  if(document.getElementById('editIdQiroah')) document.getElementById('editIdQiroah').value = "";
+  
+  document.getElementById('inputHalaman').value = "";
+  document.getElementById('inputCatatan').value = "";
+  
+  var elTugas = document.getElementById('inputTugasRumah');
+  if(elTugas) elTugas.value = "";
+  
+  document.getElementById('cekMurojaah').checked = false;
+  document.getElementById('cekMembacaSekolah').checked = false;
+  document.getElementById('cekMurojaahTeman').checked = false;
+
+  var btnSimpan = document.getElementById('btnSimpanSetoran');
+  btnSimpan.innerHTML = "<i class='fas fa-save mr-1'></i> Simpan Setoran Siswa";
+  btnSimpan.classList.replace('btn-warning', 'btn-success');
+  
+  document.getElementById('btnBatalEdit').classList.add('d-none');
+}
+
+function hapusRiwayat() {
+  if (!dataRiwayatTerakhir) {
+    alert("⚠️ Tidak ada data riwayat yang terpilih untuk dihapus!");
+    return;
+  }
+  
+  // Tangkap ID Qiroah dengan fleksibel (Fallback jika salah satu properti kosong)
+  var idQiroah = dataRiwayatTerakhir.idQiroah || dataRiwayatTerakhir.id || dataRiwayatTerakhir.id_dokumen || "";
+  var rowIndex = dataRiwayatTerakhir.rowIndex || "";
+
+  if (!idQiroah && !rowIndex) {
+    alert("⚠️ ID Data Setoran tidak ditemukan!");
+    return;
+  }
+
+  if (confirm("Apakah Anda yakin ingin menghapus data setoran ini dari Cloud Database dan Sheet?")) {
+    var txtRiwayat = document.getElementById('txtRiwayat');
+    if (txtRiwayat) txtRiwayat.innerHTML = "⏳ <span class='text-danger small'>Menghapus data...</span>";
+    
+    var hapusPayload = {
+      rowIndex: rowIndex,
+      idQiroah: idQiroah
+    };
+    
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if(res.status === 'success') {
+          alert("✅ " + res.message);
+          if (typeof batalEdit === "function") batalEdit();
+          
+          // Refresh data riwayat
+          var optSiswa = document.getElementById('optSiswa');
+          if (optSiswa) optSiswa.dispatchEvent(new Event('change'));
+        } else {
+          alert("❌ Gagal menghapus: " + res.message);
+        }
+      })
+      .withFailureHandler(function(err) {
+        alert("❌ Terputus dari server: " + err.message);
+      })
+      .hapusSetoranData(hapusPayload);
+  }
+}
+
+function simpanSetoran() {
+  var btn = document.getElementById('btnSimpanSetoran');
+  
+  // 1. PROTEKSI KLIK GANDA
+  if (btn && btn.disabled) return;
+
+  var selectSiswa = document.getElementById('optSiswa');
+  var idSiswa = selectSiswa.value;
+  if (!idSiswa) { alert("Pilih siswa terlebih dahulu!"); return; }
+  
+  var elHalaman = document.getElementById('inputHalaman');
+  var halaman = elHalaman ? elHalaman.value.trim() : "";
+  
+  // 2. PROTEKSI FRONTEND
+  if (!halaman || halaman === "-") {
+    alert("Silakan isi Halaman / Ayat / Surat terlebih dahulu!");
+    if(elHalaman) elHalaman.focus();
+    return;
+  }
+
+  var opsiTerpilih = selectSiswa.options[selectSiswa.selectedIndex].text;
+  var namaSiswa = opsiTerpilih.split(" - ")[1] || opsiTerpilih;
+  namaSiswa = namaSiswa.split(" (")[0].trim();
+
+  var elTugas = document.getElementById('inputTugasRumah');
+  var tugasRumah = elTugas ? elTugas.value.trim() : "";
+
+  var statusMurojaah = document.getElementById('cekMurojaah').checked ? 'Ya' : 'Belum';
+  var statusSekolah = document.getElementById('cekMembacaSekolah').checked ? 'Ya' : 'Belum';
+  var statusMurojaahTeman = document.getElementById('cekMurojaahTeman').checked ? 'Ya' : 'Belum';
+  
+  // Ambil hidden ID
+  var editRowIndex = document.getElementById('editRowIndex').value;
+  var editIdQiroah = document.getElementById('editIdQiroah') ? document.getElementById('editIdQiroah').value : null;
+
+  var payload = {
+    idSiswa: idSiswa,
+    namaSiswa: namaSiswa, 
+    murojaah: statusMurojaah,
+    membacaSekolah: statusSekolah,
+    murojaahTeman: statusMurojaahTeman,
+    jilid: document.getElementById('inputJilid').value,
+    halaman: halaman,
+    status: document.getElementById('inputStatus').value,
+    catatan: document.getElementById('inputCatatan').value.trim(),
+    tugasRumah: tugasRumah, 
+    namaUstadz: currentUser.nama, // Asumsi ini ada di global context aplikasi Anda
+    unit: currentUser.unit,
+    nilaiAudio: "",
+    rowIndex: editRowIndex,
+    idQiroah: editIdQiroah // PENTING UNTUK UPDATE FIRESTORE
+  };
+
+  if(btn) { btn.disabled = true; btn.innerText = "⏳ Memproses (Menyimpan di Cloud)..."; }
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if(btn) { 
+        btn.disabled = false; 
+        btn.innerHTML = editRowIndex ? "<i class='fas fa-sync-alt mr-1'></i> Update Setoran" : "<i class='fas fa-save mr-1'></i> Simpan Setoran Siswa"; 
+      }
+      
+      if(res.status === 'success') {
+        alert("✅ " + res.message);
+        
+        // --- FITUR RESET/KOSONGKAN INPUT DIPERTAHANKAN ---
+        if (typeof batalEdit === "function") batalEdit(); 
+        
+        selectSiswa.value = ""; 
+        if (elHalaman) elHalaman.value = "";
+        
+        var elCatatan = document.getElementById('inputCatatan');
+        if (elCatatan) elCatatan.value = "";
+        
+        if (elTugas) elTugas.value = "";
+        
+        if (document.getElementById('cekMurojaah')) document.getElementById('cekMurojaah').checked = false;
+        if (document.getElementById('cekMembacaSekolah')) document.getElementById('cekMembacaSekolah').checked = false;
+        if (document.getElementById('cekMurojaahTeman')) document.getElementById('cekMurojaahTeman').checked = false;
+
+        var containerRiwayat = document.getElementById('containerRiwayatSiswa') || document.getElementById('tabelRiwayat');
+        if (containerRiwayat) containerRiwayat.innerHTML = "";
+
+      } else {
+        alert("❌ Gagal: " + res.message);
+      }
+    })
+    .withFailureHandler(function(err) {
+      if(btn) { btn.disabled = false; btn.innerHTML = "<i class='fas fa-save mr-1'></i> Simpan Setoran Siswa"; }
+      alert("❌ Terputus dari server: " + err.message);
+    })
+    .prosesSetoranData(payload);
+} 
+      
+// ====================================================================
+// H. LOGIKA HALAMAN LAPORAN (SINKRON DENGAN HTML ASLI & CETAK)
+// ====================================================================
+    function inisialisasiHalamanLaporan() {
+      proteksiKategoriLaporan();
+    }
+
+    function proteksiKategoriLaporan() {
+      var selectKategori = document.getElementById('kategoriFilter');
+      if (!selectKategori) return;
+
+      var role = (window.currentUser && currentUser.role) ? currentUser.role.toString().toLowerCase() : "";
+
+      if (role !== "admin") {
+        for (var i = selectKategori.options.length - 1; i >= 0; i--) {
+          var val = selectKategori.options[i].value.toUpperCase();
+          var text = selectKategori.options[i].text.toUpperCase();
+          
+          if (val === "SEMUA" || val.indexOf("GLOBAL") !== -1 || text.indexOf("GLOBAL") !== -1) {
+            selectKategori.remove(i);
+          }
+        }
+        selectKategori.value = "PER_KELAS";
+      }
+
+      updateSubFilter();
+    }
+
+    function updateSubFilter() {
+      var selectKategori = document.getElementById('kategoriFilter');
+      if (!selectKategori) return;
+      
+      var kategori = selectKategori.value.toUpperCase();
+      var containerSub = document.getElementById('subFilterContainer');
+      var labelSub = document.getElementById('labelSub');
+      var dropdownSub = document.getElementById('subFilterDropdown');
+
+      if (kategori === "SEMUA" || kategori === "") {
+        if (containerSub) containerSub.style.display = 'none';
+        return;
+      }
+
+      if (containerSub) containerSub.style.display = 'block';
+      dropdownSub.innerHTML = "<option value=''>-- Memuat opsi... --</option>";
+
+      var userRole = (window.currentUser && currentUser.role) ? currentUser.role : "ustadz";
+      var userName = (window.currentUser && currentUser.nama) ? currentUser.nama : "";
+
+      google.script.run
+        .withSuccessHandler(function(options) {
+          dropdownSub.innerHTML = "";
+          
+          if (kategori === "PER_KELAS") {
+            if (labelSub) labelSub.innerText = "Pilih Kelas:";
+            dropdownSub.innerHTML = "<option value=''>-- Pilih Kelas --</option>";
+            if (options && options.kelas && options.kelas.length > 0) {
+              options.kelas.forEach(function(kls) {
+                dropdownSub.innerHTML += "<option value='" + kls + "'>" + kls + "</option>";
+              });
+            } else {
+              dropdownSub.innerHTML = "<option value=''>Tidak ada kelas binaan</option>";
+            }
+            
+          } else if (kategori === "PER_SISWA") {
+            if (labelSub) labelSub.innerText = "Pilih Siswa:";
+            dropdownSub.innerHTML = "<option value=''>-- Pilih Siswa --</option>";
+            if (options && options.siswa && options.siswa.length > 0) {
+              options.siswa.forEach(function(sis) {
+                dropdownSub.innerHTML += "<option value='" + sis.id + "'>" + sis.id + " - " + sis.nama + "</option>";
+              });
+            } else {
+              dropdownSub.innerHTML = "<option value=''>Tidak ada siswa binaan</option>";
+            }
+          }
+        })
+        .withFailureHandler(function(err) {
+          dropdownSub.innerHTML = "<option value=''>Gagal memuat opsi</option>";
+          console.error(err);
+        })
+        .getFilterOptions(userRole, userName);
+    }
+
+  // ====================================================================
+// FUNGSI TARIK DATA LAPORAN (GABUNGAN: HARIAN + GRAFIK & REKAP BULANAN)
+// ====================================================================
+function tarikDataLaporan() {
+  var tglMulai = document.getElementById("tglMulai").value;
+  var tglSelesai = document.getElementById("tglSelesai").value;
+  var jenis = document.getElementById("jenisLaporan") ? document.getElementById("jenisLaporan").value : "HARIAN";
+  var kategori = document.getElementById("kategoriFilter").value;
+  var filterVal = document.getElementById("subFilterDropdown") ? document.getElementById("subFilterDropdown").value : "";
+  
+  var tbody = document.getElementById("tbodyLaporan");
+  var wadahGrafik = document.getElementById("wadahGrafikLaporan");
+
+  if (!tglMulai || !tglSelesai) {
+    alert("Silakan tentukan tanggal awal dan tanggal selesai terlebih dahulu.");
+    return;
+  }
+
+  if (kategori !== "SEMUA" && !filterVal) {
+    alert("Silakan pilih opsi sub-filter (Kelas/Siswa) terlebih dahulu.");
+    return;
+  }
+
+  var userRole = (window.currentUser && currentUser.role) ? currentUser.role : "ustadz";
+  var userName = (window.currentUser && currentUser.nama) ? currentUser.nama : "";
+  var userUnit = (window.currentUser && currentUser.unit) ? currentUser.unit : "";
+
+  // Bersihkan grafik sebelumnya
+  if (wadahGrafik) wadahGrafik.innerHTML = "";
+
+  // ----------------------------------------------------------------
+  // KONDISI 1: JIKA MEMILIH LAPORAN HARIAN (Fungsi Lama + Grafik)
+  // ----------------------------------------------------------------
+  if (jenis === "HARIAN") {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat data laporan harian...</td></tr>`;
+
+    google.script.run
+      .withSuccessHandler(function(responseLaporan) {
+        tbody.innerHTML = "";
+        
+        var dataLaporan = responseLaporan.tabelRiwayat;
+        var dataRekapGrafik = responseLaporan.grafikRekap;
+        
+        if (!dataLaporan || dataLaporan.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Tidak ada data setoran ditemukan pada periode ini.</td></tr>`;
+          return;
+        }
+
+        // 1. Render Tabel Harian
+        dataLaporan.forEach(function(row, index) {
+          var isLulus = cekTargetQiroahSiswa(row.kelas, row.capaianAkhir);
+
+          var tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="text-center">${index + 1}</td>
+            <td><strong>${row.namaSiswa}</strong> <small class="text-muted">(Kl. ${row.kelas})</small></td>
+            <td class="text-center">${row.tgl}</td>
+            <td class="text-center">${row.ustadz}</td>
+            <td class="text-center"><span class="badge badge-light p-2" style="font-size:12px;">-</span></td>
+            <td class="text-center">
+              <span class="badge badge-success p-2" style="font-size:12px;">${row.capaianAkhir}</span>
+              <br><small class="${isLulus ? 'text-success' : 'text-danger'} font-weight-bold" style="font-size:10px;">
+                ${isLulus ? '✓ Capai Target' : '✗ Belum Target'}
+              </small>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // 2. Render Grafik Harian
+        if (wadahGrafik) {
+          var totalMurid = dataRekapGrafik.length;
+          var mencapaiTarget = 0;
+          var belumMencapaiTarget = 0;
+
+          dataRekapGrafik.forEach(function(row) {
+             var isLulus = cekTargetQiroahSiswa(row.kelas, row.capaianAkhir);
+             if (isLulus) { mencapaiTarget++; } else { belumMencapaiTarget++; }
+          });
+
+          if (kategori === "PER_KELAS" || kategori === "SEMUA") {
+            var persenMencapai = totalMurid > 0 ? ((mencapaiTarget / totalMurid) * 100).toFixed(0) : 0;
+            var persenBelum = totalMurid > 0 ? ((belumMencapaiTarget / totalMurid) * 100).toFixed(0) : 0;
+
+            wadahGrafik.innerHTML = `
+              <div class="card p-3 shadow-sm mb-3 custom-progress-container">
+                <h6 class="font-weight-bold text-dark mb-3"><i class="fas fa-chart-bar mr-1"></i> Grafik Perkembangan Target Qiroah</h6>
+                <div class="mb-2">
+                  <div class="qiroah-bar-label text-danger">${belumMencapaiTarget} murid belum mencapai target (${persenBelum}%)</div>
+                  <div class="progress"><div class="progress-bar bg-danger" style="width: ${persenBelum}%"></div></div>
+                </div>
+                <div>
+                  <div class="qiroah-bar-label text-success">${mencapaiTarget} murid mencapai target (${persenMencapai}%)</div>
+                  <div class="progress"><div class="progress-bar bg-success" style="width: ${persenMencapai}%"></div></div>
+                </div>
+              </div>
+            `;
+          } else if (kategori === "PER_SISWA" && totalMurid > 0) {
+            var siswaSatu = dataRekapGrafik[0];
+            var lulusSatu = cekTargetQiroahSiswa(siswaSatu.kelas, siswaSatu.capaianAkhir);
+            
+            wadahGrafik.innerHTML = `
+              <div class="card p-3 shadow-sm mb-3 custom-progress-container" style="border-left-color: ${lulusSatu ? '#28a745' : '#dc3545'};">
+                <h6 class="font-weight-bold text-dark mb-2"><i class="fas fa-user-chart mr-1"></i> Grafik Target Qiroah Siswa</h6>
+                <div class="qiroah-bar-label mb-2">Capaian Aktual: <strong>${siswaSatu.capaianAkhir}</strong></div>
+                <div class="progress" style="height:22px;">
+                  <div class="progress-bar ${lulusSatu ? 'bg-success' : 'bg-danger'} text-white font-weight-bold small" style="width: 100%">
+                    ${lulusSatu ? 'MENCAPAI TARGET' : 'BELUM MENCAPAI TARGET'}
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }
+      })
+      .withFailureHandler(function(err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-3">Gagal memuat data: ${err.toString()}</td></tr>`;
+        console.error(err);
+      })
+      .prosesAmbilLaporan(tglMulai, tglSelesai, kategori, filterVal, userRole, userName);
+
+  } 
+  // ----------------------------------------------------------------
+  // KONDISI 2: JIKA MEMILIH LAPORAN REKAPITULASI BULANAN
+  // ----------------------------------------------------------------
+  else {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-primary py-3"><i class="fas fa-spinner fa-spin"></i> Memuat data rekapitulasi bulanan...</td></tr>`;
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+        tbody.innerHTML = "";
+        
+        // Pengaman jika respons langsung berupa array atau objek tanpa properti status
+        var resData = [];
+        if (response && response.status === "success") {
+          resData = response.data || [];
+        } else if (Array.isArray(response)) {
+          resData = response;
+        }
+
+        if (resData.length > 0) {
+          resData.forEach(function(row, index) {
+            var tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="text-center">${index + 1}</td>
+              <td>${row.nama}</td>
+              <td class="text-center">${row.tglAwal || '-'}</td>
+              <td class="text-center">${row.capaianAwal || '-'}</td>
+              <td class="text-center">${row.tglTerakhirStr || '-'}</td>
+              <td>${row.capaianAkhir || '-'}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } else {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Tidak ada data rekapitulasi pada periode ini.</td></tr>`;
+        }
+      })
+      .withFailureHandler(function(err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-3">Gagal memuat rekap: ${err}</td></tr>`;
+      })
+      .getLaporanRekapQiroahDataForPrint(tglMulai, tglSelesai, userName, userUnit, kategori, filterVal);
+  }
+}
+
+    function cetakLaporanFormal() {
+    var tglMulai = document.getElementById('tglMulai').value;
+    var tglSelesai = document.getElementById('tglSelesai').value;
+    var jenis = document.getElementById('jenisLaporan') ? document.getElementById('jenisLaporan').value : "HARIAN"; // Menangkap pilihan harian/rekap
+    var kategori = document.getElementById('kategoriFilter').value;
+    
+    var containerSub = document.getElementById('subFilterContainer');
+    var filterVal = (containerSub && containerSub.style.display !== 'none') ? document.getElementById('subFilterDropdown').value : "";
+
+    if (!tglMulai || !tglSelesai) {
+      alert("Tentukan rentang tanggal periode terlebih dahulu!");
+      return;
+    }
+
+    var btn = document.getElementById('btnCetakFormal');
+    if (btn) { btn.disabled = true; btn.innerHTML = "⏳ Menyiapkan Dokumen..."; }
+
+    var userName = (window.currentUser && window.currentUser.nama) ? window.currentUser.nama : "";
+    var userUnit = (window.currentUser && window.currentUser.unit) ? window.currentUser.unit : "";
+
+    google.script.run
+      .withSuccessHandler(function(urlApp) {
+        if (btn) { btn.disabled = false; btn.innerHTML = "<i class='fas fa-print mr-1'></i> Cetak Laporan Formal"; }
+        
+        // URL disisipkan parameter jenis=... agar backend tahu file mana yang dibuka
+        var urlCetak = urlApp + "?page=cetak" +
+                               "&jenis=" + encodeURIComponent(jenis) +
+                               "&tglMulai=" + encodeURIComponent(tglMulai) +
+                               "&tglSelesai=" + encodeURIComponent(tglSelesai) +
+                               "&ustadz=" + encodeURIComponent(userName) +
+                               "&unit=" + encodeURIComponent(userUnit) +
+                               "&kategori=" + encodeURIComponent(kategori) +
+                               "&filterVal=" + encodeURIComponent(filterVal);
+        
+        window.open(urlCetak, '_blank');
+      })
+      .withFailureHandler(function(err) {
+        if (btn) { btn.disabled = false; btn.innerHTML = "<i class='fas fa-print mr-1'></i> Cetak Laporan Formal"; }
+        var errMsg = err ? (err.message || err.toString()) : "Unknown error";
+        alert("Gagal memicu print server: " + errMsg);
+      })
+      .getScriptUrl();
+}
+
+    // 1. Fungsi Toggle Informasi Target Qiroah (Buka / Tutup Otomatis)
+function toggleTargetQiroah() {
+  var box = document.getElementById("boxTargetQiroah");
+  if (box.classList.contains("d-none")) {
+    box.classList.remove("d-none");
+  } else {
+    box.classList.add("d-none");
+  }
+}
+
+// 2. Fungsi Logika Pengecekan Target Berdasarkan Kelas & Capaian Akhir
+function cekTargetQiroahSiswa(kelas, capaianStr) {
+  if (!capaianStr || !kelas) return false;
+  
+  var klsNum = parseInt(kelas.toString().replace(/[^0-9]/g, '')) || 0;
+  var teksCapaian = capaianStr.toLowerCase();
+  
+  // Mengonversi tingkat qiroah ke bobot angka untuk memudahkan komparasi
+  var bobot = 0;
+  
+  // PERBAIKAN 1: Menambahkan variasi ejaan termasuk tanda petik (')
+  if (
+    teksCapaian.includes("al quran") || 
+    teksCapaian.includes("al-quran") || 
+    teksCapaian.includes("al-qur'an") || 
+    teksCapaian.includes("al qur'an") ||
+    teksCapaian.includes("alquran")
+  ) {
+    bobot = 7;
+  } else if (teksCapaian.includes("at tartil 6")) { bobot = 6; }
+  else if (teksCapaian.includes("at tartil 5")) { bobot = 5; }
+  else if (teksCapaian.includes("at tartil 4")) { bobot = 4; }
+  else if (teksCapaian.includes("at tartil 3")) { bobot = 3; }
+  else if (teksCapaian.includes("at tartil 2")) { bobot = 2; }
+  else if (teksCapaian.includes("at tartil 1")) { bobot = 1; }
+
+  // PERBAIKAN 2: Menyesuaikan aturan target qiroah
+  if (klsNum === 1) {
+    // Target Kelas 1: At Tartil jilid 1-3. 
+    // Minimal bobot >= 1, artinya jika di Jilid 1 hingga Al-Quran akan berstatus hijau.
+    // (Ubah menjadi bobot >= 3 jika syarat lulus target harus SUDAH MENCAPAI Jilid 3)
+    return (bobot >= 1); 
+    
+  } else if (klsNum === 2) {
+    // Target Kelas 2: At Tartil jilid 4-5.
+    // Minimal bobot >= 4, artinya Jilid 4, 5, 6, dan Al-Quran akan berstatus hijau.
+    return (bobot >= 4); 
+    
+  } else if (klsNum >= 3) {
+    // Target Kelas 3 ke atas: Al-Quran.
+    return (bobot >= 7); 
+  }
+  
+  return false;
+}
+
+function togglePassword(){
+
+    const input = document.getElementById("loginPassword");
+    const check = document.getElementById("showPassword");
+
+    input.type = check.checked ? "text" : "password";
+}
+
+// A. Fungsi Inisialisasi Halaman Monitoring (Dipanggil saat menu Monitoring diklik)
+function initHalamanMonitoring() {
+  var tglMulaiEl = document.getElementById('inputTglMulai');
+  var tglAkhirEl = document.getElementById('inputTglAkhir');
+  
+  // Set otomatis tanggal awal bulan s/d hari ini jika input masih kosong
+  var now = new Date();
+  var year = now.getFullYear();
+  var month = String(now.getMonth() + 1).padStart(2, '0');
+  var day = String(now.getDate()).padStart(2, '0');
+  
+  if (tglMulaiEl && !tglMulaiEl.value) {
+    tglMulaiEl.value = year + '-' + month + '-01'; // Tanggal 1 bulan berjalan
+  }
+  if (tglAkhirEl && !tglAkhirEl.value) {
+    tglAkhirEl.value = year + '-' + month + '-' + day; // Hari ini
+  }
+  
+  // Jalankan pencarian data
+  loadMonitoringByDate();
+}
+
+// B. Fungsi Load Monitoring (Menggunakan data dari currentUser)
+function loadMonitoringByDate() {
+  var tglMulai = document.getElementById('inputTglMulai') ? document.getElementById('inputTglMulai').value : '';
+  var tglAkhir = document.getElementById('inputTglAkhir') ? document.getElementById('inputTglAkhir').value : '';
+  
+  if (!tglMulai || !tglAkhir) {
+    alert("Mohon tentukan tanggal mulai dan tanggal akhir monitoring!");
+    return;
+  }
+
+  // VALIDASI: Pastikan currentUser sudah terisi setelah login
+  if (typeof currentUser === 'undefined' || !currentUser) {
+    alert("Data sesi login tidak ditemukan. Silakan login kembali.");
+    return;
+  }
+  
+  // Ambil role & unit langsung dari objek currentUser yang sudah tersimpan
+  var userRole = currentUser.role || '';
+  var userUnit = currentUser.unit || '';
+
+  document.getElementById('tbodyMonitoring').innerHTML = '<tr><td colspan="5" class="text-center py-3"><i class="fas fa-spinner fa-spin"></i> Memuat data ' + userUnit + '...</td></tr>';
+  
+  google.script.run
+    .withSuccessHandler(tampilkanDataMonitoring)
+    .withFailureHandler(function(err) {
+       document.getElementById('tbodyMonitoring').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Gagal memuat data: ' + err.message + '</td></tr>';
+    })
+    .getMonitoringUstadz(tglMulai, tglAkhir, userRole, userUnit);
+}
+
+// C. Fungsi Menampilkan Hasil ke Tabel
+function tampilkanDataMonitoring(response) {
+  if (!response || !response.sukses) {
+    document.getElementById('tbodyMonitoring').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Gagal: ' + (response ? response.pesan : 'Terjadi kesalahan sistem') + '</td></tr>';
+    return;
+  }
+  
+  // Update Ringkasan Angka
+  document.getElementById('statUstadzAktif').innerText = response.total_ustadz_aktif;
+  document.getElementById('statTotalSetoran').innerText = response.total_setoran;
+  
+  var tbody = document.getElementById('tbodyMonitoring');
+  tbody.innerHTML = '';
+  
+  if (!response.data || response.data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">Tidak ada data Ustadz/ah di unit Anda atau belum ada input setoran.</td></tr>';
+    return;
+  }
+  
+  // Render Baris Tabel
+  response.data.forEach(function(item, index) {
+    var badgeClass = item.status === 'AKTIF' ? 'badge-success' : 'badge-warning';
+    var badgeText = item.status === 'AKTIF' ? 'Aktif Input' : 'Belum Input';
+    
+    // PERBAIKAN: Tambahkan tombol Rekap
+    // Nama ustadz diamankan dengan replace agar jika ada tanda kutip tidak error
+    var namaAman = item.nama_lengkap.replace(/'/g, "\\'");
+    var btnRekap = `<button class="btn btn-sm btn-info text-white fw-bold py-1 px-2" onclick="lihatRekapDetailUstadz('${namaAman}')"><i class="fas fa-list"></i> Cek Rekap</button>`;
+    
+    var row = '<tr>' +
+      '<td class="text-center align-middle">' + (index + 1) + '</td>' +
+      '<td class="align-middle font-weight-bold">' + item.nama_lengkap + '</td>' +
+      '<td class="text-center align-middle">' + item.unit + '</td>' +
+      '<td class="text-center align-middle font-weight-bold text-info" style="font-size:14px;">' + item.jumlah_input + ' x</td>' +
+      '<td class="text-center align-middle"><span class="badge ' + badgeClass + ' py-1 px-2">' + badgeText + '</span></td>' +
+      '<td class="text-center align-middle">' + (item.jumlah_input > 0 ? btnRekap : '-') + '</td>' + // Kolom Rekap
+    '</tr>';
+    
+    tbody.innerHTML += row;
+  });
+}
+
+// Variabel global untuk menyimpan listener agar tidak tumpang tindih
+let listenerMonitoring = null;
+let masterDaftarUstadz = []; // Asumsi: Array ini sudah diisi dari data Sheet "Users" saat halaman pertama dibuka
+
+function mulaiMonitoringRealtime() {
+  // 1. Ambil nilai tanggal dari UI (sesuai Screenshot 482)
+  var tglMulaiStr = document.getElementById('tglMulai').value;
+  var tglAkhirStr = document.getElementById('tglAkhir').value;
+  
+  if (!tglMulaiStr || !tglAkhirStr) return;
+
+  // Ubah ke format Date object (Mencakup 00:00:00 s/d 23:59:59)
+  var startDate = new Date(tglMulaiStr + "T00:00:00");
+  var endDate = new Date(tglAkhirStr + "T23:59:59");
+
+  // 2. Siapkan rule Admin/Unit (Asumsi currentUser tersedia global)
+  var roleAkses = currentUser.role ? currentUser.role.toString().toLowerCase().trim() : "";
+  var unitAkses = currentUser.unit ? currentUser.unit.toString().toLowerCase().trim() : "";
+  var isAdminPusat = (roleAkses.includes("adminpusat") || unitAkses === "semua" || unitAkses === "pusat");
+
+  // 3. Ubah teks UI menjadi Loading
+  document.getElementById('boxUstadzAktif').innerHTML = "<i class='fas fa-spinner fa-spin'></i>";
+  document.getElementById('boxTotalSetoran').innerHTML = "<i class='fas fa-spinner fa-spin'></i>";
+
+  // 4. Hentikan listener lama jika Admin merubah tanggal
+  if (listenerMonitoring !== null) {
+    listenerMonitoring(); 
+  }
+
+  // 5. EKSEKUSI CLIENT SDK REAL-TIME (onSnapshot)
+  var db = firebase.firestore();
+  var query = db.collection("Setoran")
+                .where("tanggal", ">=", startDate)
+                .where("tanggal", "<=", endDate);
+
+  listenerMonitoring = query.onSnapshot(function(snapshot) {
+    var hitungSetoran = {};
+    var totalSetoranPeriode = 0;
+
+    // A. Looping data seketika dari database cloud
+    snapshot.forEach(function(doc) {
+      var data = doc.data();
+      var ustadzDb = data.ustadz || "-";
+      var unitDb = data.unit || "-";
+
+      // Filter Unit
+      if (!isAdminPusat && unitDb.toLowerCase() !== unitAkses) return;
+
+      var key = ustadzDb.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      if (!hitungSetoran[key]) {
+         hitungSetoran[key] = 0;
+      }
+      hitungSetoran[key] += 1;
+      totalSetoranPeriode++;
+    });
+
+    // B. Gabungkan data Real-Time dengan Daftar Master Ustadz
+    var hasilMonitoring = [];
+    var ustadzAktif = 0;
+
+    // (Asumsi masterDaftarUstadz berisi [{nama_lengkap: "Ambar...", unit: "Nogosari"}, ...])
+    masterDaftarUstadz.forEach(function(guru) {
+       var keyGuru = guru.nama_lengkap.toLowerCase().replace(/[^a-z0-9]/g, '');
+       var jumlahInput = hitungSetoran[keyGuru] || 0;
+       
+       if (jumlahInput > 0) ustadzAktif++;
+
+       hasilMonitoring.push({
+         nama_lengkap: guru.nama_lengkap,
+         unit: guru.unit,
+         jumlah_input: jumlahInput,
+         status: jumlahInput > 0 ? "AKTIF" : "BELUM INPUT"
+       });
+    });
+
+    // Urutkan dari yang terbanyak input
+    hasilMonitoring.sort(function(a, b) { return b.jumlah_input - a.jumlah_input; });
+
+    // C. Update UI Kotak Hijau & Biru secara instan!
+    document.getElementById('boxUstadzAktif').innerText = ustadzAktif;
+    document.getElementById('boxTotalSetoran').innerText = totalSetoranPeriode;
+
+    // D. Render ke Tabel HTML (Bapak bisa gunakan fungsi render tabel Bapak yang sudah ada)
+    // renderTabel(hasilMonitoring); 
+    
+  }, function(error) {
+    console.error("Gagal monitoring realtime:", error);
+    alert("Terputus dari database realtime.");
+  });
+}
+
+function kembaliKeMenuUtama() {
+  // Contoh logika menyembunyikan halaman form/laporan aktif
+  document.getElementById('pageMonitoring').classList.add('hidden'); // Sesuaikan dengan ID page ustadz
+  // document.getElementById('pageSetoran').classList.add('hidden');
+  
+  // Memunculkan halaman utama / dashboard
+  document.getElementById('pageMenuUtama').classList.remove('hidden'); // Sesuaikan dengan ID menu utama
+}
+
+// ==========================================
+// JS HALAMAN PENILAIAN
+// ==========================================
+
+// 1. Panggil ini saat menu Penilaian diklik
+function initHalamanPenilaian() {
+  var selectSiswa = document.getElementById('selectSiswaPenilaian');
+  var containerTugas = document.getElementById('containerTugasSiswa');
+  
+  selectSiswa.innerHTML = '<option value="">-- Memuat Siswa Binaan... --</option>';
+  containerTugas.innerHTML = '<p class="text-center text-muted mt-3">Silakan pilih siswa terlebih dahulu.</p>';
+
+  // Memanggil fungsi GS yang sudah Anda buat sebelumnya
+  google.script.run
+    .withSuccessHandler(function(listBinaan) {
+      selectSiswa.innerHTML = '<option value="">-- Pilih Siswa Binaan --</option>';
+      
+      if (!listBinaan || listBinaan.length === 0) {
+        selectSiswa.innerHTML = '<option value="">-- Belum ada siswa binaan --</option>';
+        return;
+      }
+      
+      listBinaan.forEach(function(siswa) {
+        var opt = document.createElement('option');
+        opt.value = siswa.idSiswa;
+        opt.innerText = siswa.idSiswa + " - " + siswa.namaSiswa + " (" + (siswa.kelas || "") + ")";
+        selectSiswa.appendChild(opt);
+      });
+    })
+    .withFailureHandler(function(err) {
+      selectSiswa.innerHTML = '<option value="">-- Gagal memuat data --</option>';
+      console.error(err);
+    })
+    // Pastikan variabel currentUser.targetID dan currentUser.role sudah tersedia secara global di script Anda
+    .getSiswaBinaanServer(currentUser.targetID, currentUser.role); 
+}
+
+// 2. Load Tugas ketika Dropdown Siswa dipilih
+function loadTugasSiswa() {
+  var idSiswa = document.getElementById('selectSiswaPenilaian').value;
+  var container = document.getElementById('containerTugasSiswa');
+
+  if (!idSiswa) {
+    container.innerHTML = '<p class="text-center text-muted mt-3">Silakan pilih siswa terlebih dahulu.</p>';
+    return;
+  }
+
+  // Tampilkan loading animation
+  container.innerHTML = '<div class="text-center my-4"><div class="spinner-border text-success" role="status"></div><p>Memuat daftar tugas...</p></div>';
+
+  google.script.run
+    .withSuccessHandler(function(dataTugas) {
+      if (!dataTugas || dataTugas.length === 0) {
+        container.innerHTML = '<div class="alert alert-info text-center">Belum ada riwayat tugas rumah untuk siswa ini.</div>';
+        return;
+      }
+
+      // Mulai menggambar tabel
+      var html = '<div class="table-responsive">' +
+                 '<table class="table table-bordered table-hover mt-3">' +
+                 '<thead class="thead-light text-center">' +
+                 '<tr>' +
+                 '<th width="15%">Tgl</th>' +
+                 '<th width="25%">Tugas</th>' +
+                 '<th width="15%">Status</th>' +
+                 '<th width="25%">Catatan Guru</th>' +
+                 '<th width="20%">Aksi / Nilai</th>' +
+                 '</tr>' +
+                 '</thead>' +
+                 '<tbody>';
+
+      // Isi baris tabel
+      dataTugas.forEach(function(tugas) {
+        // KOREKSI: Tambahkan fallback (|| "") agar tidak error jika data kosong/null
+        var statusStr = (tugas.statusSetoran || "").toLowerCase();
+        
+        // KOREKSI: Ubah logika pencarian menjadi 'sudah'
+        var badgeStatus = statusStr.includes('sudah') ? 
+                          '<span class="badge badge-success">Sudah Dikerjakan</span>' : 
+                          '<span class="badge badge-warning">Belum Dikerjakan</span>';
+
+        var kolomAksi = '';
+        if (tugas.nilai && tugas.nilai !== "") {
+           kolomAksi = '<div class="text-center">' +
+                       '<strong class="text-success">' + tugas.nilai + '</strong><br>' +
+                       '<small class="text-muted"><i>' + (tugas.catatanPenilaian || '') + '</i></small>' +
+                       '</div>';
+        } else {
+           // KOREKSI UTAMA: Memanggil bukaModalPenilaian dengan parameter yang sesuai.
+           // Kita gunakan replace() untuk mengamankan tanda kutip tunggal jika ada di teks tugas.
+           var tugasAman = tugas.tugasRumah.replace(/'/g, "\\'"); 
+           kolomAksi = '<div class="text-center">' +
+                       '<button class="btn btn-sm btn-primary" onclick="bukaModalPenilaian(\'' + tugas.idQiroah + '\', \'' + tugasAman + '\', \'\', \'\')">Beri Nilai</button>' +
+                       '</div>';
+        }
+
+        html += '<tr>' +
+                '<td class="text-center align-middle">' + tugas.tanggal + '</td>' +
+                '<td class="align-middle">' + tugas.tugasRumah + '</td>' +
+                '<td class="text-center align-middle">' + badgeStatus + '</td>' +
+                '<td class="align-middle">' + tugas.catatanGuru + '</td>' +
+                '<td class="align-middle">' + kolomAksi + '</td>' +
+                '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    })
+    .withFailureHandler(function(err) {
+      container.innerHTML = '<div class="alert alert-danger">Gagal memuat tugas: ' + err.message + '</div>';
+    })
+    .getTugasUntukPenilaian(idSiswa);
+}
+
+// 4. Buka / Tutup Modal
+function bukaModalPenilaian(idQiroah, tugas, nilaiSekarang, catatanSekarang) {
+  document.getElementById('modalIdQiroah').value = idQiroah;
+  document.getElementById('labelTugasModal').innerText = tugas;
+  document.getElementById('inputNilaiTugas').value = nilaiSekarang || "";
+  document.getElementById('inputCatatanTugas').value = catatanSekarang || "";
+  
+  document.getElementById('modalPenilaian').classList.remove('hidden');
+}
+
+function tutupModalPenilaian() {
+  document.getElementById('modalPenilaian').classList.add('hidden');
+}
+
+// 5. Eksekusi Simpan Data
+function simpanPenilaianJS() {
+  var idQiroah = document.getElementById('modalIdQiroah').value;
+  var nilai = document.getElementById('inputNilaiTugas').value;
+  var catatan = document.getElementById('inputCatatanTugas').value;
+  
+  if(!nilai) {
+    alert("Mohon pilih Nilai terlebih dahulu!");
+    return;
+  }
+  
+  var btn = document.getElementById('btnSimpanNilai');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+  btn.disabled = true;
+  
+  google.script.run
+    .withSuccessHandler(function(res){
+       btn.innerHTML = 'Simpan';
+       btn.disabled = false;
+       tutupModalPenilaian();
+       
+       if(res.sukses) {
+         alert("Data berhasil disimpan!");
+         loadTugasSiswa(); // Refresh daftar otomatis
+       } else {
+         alert("Gagal: " + res.pesan);
+       }
+    })
+    .simpanNilaiTugas(idQiroah, nilai, catatan);
+}
+
+function keluarAplikasi() {
+  if (confirm("Yakin ingin keluar?")) {
+    
+    // 1. Kosongkan data user global
+    currentUser = { username: "", role: "", targetID: "", nama: "", unit: "", statusSetup: "" };
+    
+    // 2. Kosongkan form login biar aman dipakai orang selanjutnya
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    
+    // 3. Sembunyikan App, Tampilkan Login. Ini kuncinya
+    document.getElementById('appLayer').style.display = 'none';
+    document.getElementById('authLayer').style.display = 'block';
+    
+    // 4. Paksa balik ke halaman login
+    bukaPage('Login');
+  }
+}
+
+// ====================================================================
+// FUNGSI BARU: MENAMPILKAN DETAIL & GRAFIK USTADZ
+// ====================================================================
+function lihatRekapDetailUstadz(namaUstadz) {
+  var tglMulai = document.getElementById('inputTglMulai').value;
+  var tglAkhir = document.getElementById('inputTglAkhir').value;
+  
+  // Buat element penampung sementara jika belum ada (Modal Pop-up)
+  if(!document.getElementById('modalRekapUstadz')) {
+     var modalHtml = `
+     <div id="modalRekapUstadz" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:none; overflow-y:auto; padding:20px;">
+        <div style="background:#fff; max-width:800px; margin:20px auto; border-radius:8px; padding:20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+           <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+              <h5 class="text-primary mb-0"><i class="fas fa-chart-bar"></i> Rekap Detail Ustadz/ah</h5>
+              <button onclick="document.getElementById('modalRekapUstadz').style.display='none'" class="btn btn-sm btn-danger">&times; Tutup</button>
+           </div>
+           <div id="kontenRekapUstadz" class="text-center">Memuat data...</div>
+        </div>
+     </div>`;
+     document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+  
+  document.getElementById('modalRekapUstadz').style.display = 'block';
+  document.getElementById('kontenRekapUstadz').innerHTML = '<h5 class="text-info mt-3"><i class="fas fa-spinner fa-spin"></i> Sedang menarik riwayat <b>' + namaUstadz + '</b>...</h5>';
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if(!res) {
+         document.getElementById('kontenRekapUstadz').innerHTML = '<div class="alert alert-danger">Error: Data dari server gagal ditarik (Null). Pastikan fungsi getRekapDetailUstadzServer memiliki perintah "return".</div>';
+         return;
+       }
+       if(!res.sukses) {
+         document.getElementById('kontenRekapUstadz').innerHTML = '<div class="alert alert-danger">' + res.pesan + '</div>';
+         return;
+       }
+       
+       // 1. Buat Grafik Progress Bar (Mirip Foto 611)
+       var persenTercapai = res.total > 0 ? Math.round((res.tercapai / res.total) * 100) : 0;
+       var persenBelum = res.total > 0 ? Math.round((res.belum / res.total) * 100) : 0;
+       
+       var html = `
+       <div class="card mb-3 border-secondary">
+          <div class="card-header bg-light fw-bold"><i class="fas fa-chart-line"></i> Grafik Perkembangan Target - ${res.nama}</div>
+          <div class="card-body text-left">
+             
+             <!-- Bar Belum Tercapai (Merah) -->
+             <small class="fw-bold text-danger">${res.belum} setoran belum mencapai target (${persenBelum}%)</small>
+             <div class="progress mb-3" style="height: 15px;">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: ${persenBelum}%"></div>
+             </div>
+
+             <!-- Bar Tercapai (Hijau) -->
+             <small class="fw-bold text-success">${res.tercapai} setoran mencapai target (${persenTercapai}%)</small>
+             <div class="progress" style="height: 15px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: ${persenTercapai}%"></div>
+             </div>
+
+          </div>
+       </div>
+       `;
+       
+       // 2. Buat Tabel Detail
+       html += `
+       <div class="table-responsive">
+          <table class="table table-bordered table-striped table-sm text-center">
+             <thead class="bg-light">
+                <tr>
+                   <th>No</th>
+                   <th>Nama Siswa</th>
+                   <th>Tgl</th>
+                   <th>Ustadz</th>
+                   <th>Capaian Akhir</th>
+                </tr>
+             </thead>
+             <tbody>`;
+             
+if(res.data.length === 0) {
+         html += `<tr><td colspan="5">Belum ada data setoran.</td></tr>`;
+       } else {
+         res.data.forEach(function(r, idx) {
+            
+            // Atur warna berdasarkan teks yang kita buat di Server
+            var badgeTarget = r.statusTarget.includes('Belum') ? 'text-danger' : 'text-success';
+            var iconTarget = r.statusTarget.includes('Belum') ? 'X' : '✓';
+            
+            // Warna untuk Lancar / Diulang (diambil dari Kolom I)
+            var bgLancar = r.statusLancar.toLowerCase().includes('ulang') ? 'bg-warning text-dark' : 'bg-info text-white';
+            
+            html += `
+            <tr>
+               <td class="align-middle">${idx + 1}</td>
+               <td class="fw-bold text-left align-middle">
+                  ${r.siswa}
+                  <div style="font-size: 11px; font-weight: normal; color: #777; margin-top: 3px;">
+                    <i>Catatan: ${r.catatan ? r.catatan : '-'}</i>
+                  </div>
+               </td>
+               <td class="align-middle">${r.tgl}</td>
+               <td class="align-middle">${r.ustadz}</td>
+               <td class="align-middle">
+                  <span class="badge ${bgLancar} py-1 px-2" style="font-size:12px;">${r.capaian} (${r.statusLancar})</span><br>
+                  <small class="fw-bold ${badgeTarget} mt-1 d-inline-block">${iconTarget} ${r.statusTarget}</small>
+               </td>
+            </tr>`;
+         });
+       }
+
+       html += `</tbody></table></div>`;
+       
+       // Tampilkan ke layar
+       document.getElementById('kontenRekapUstadz').innerHTML = html;
+    })
+    .withFailureHandler(function(err){
+       document.getElementById('kontenRekapUstadz').innerHTML = '<div class="alert alert-danger">Error: ' + err.message + '</div>';
+    })
+    .getRekapDetailUstadzServer(namaUstadz, tglMulai, tglAkhir);
+}
+
+function cekPerkembanganKelas() {
+  var selectEl = document.getElementById('selectFilterKelas');
+  var kelas = selectEl ? selectEl.value.trim() : '';
+  
+  if (!kelas) {
+    alert('Silakan pilih kelas terlebih dahulu!');
+    return;
+  }
+  
+  var userUnit = (window.currentUser && currentUser.unit) ? currentUser.unit : '';
+  
+  var areaStat = document.getElementById('areaStatistikKelas');
+  if (areaStat) areaStat.classList.add('hidden');
+
+  document.getElementById('tabelPerkembanganKelas').innerHTML = 
+    '<div class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Menarik data perkembangan ' + kelas + '...</div>';
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if(!res.sukses) {
+        document.getElementById('tabelPerkembanganKelas').innerHTML = '<div class="alert alert-danger">' + res.pesan + '</div>';
+        return;
+      }
+      
+      var totalSiswa = res.data.length;
+      var sudahSetorCount = 0;
+      var belumSetorCount = 0;
+      
+      // Variabel untuk Grafik Target
+      var targetTercapaiCount = 0;
+      var targetBelumCount = 0;
+
+      // TOMBOL TUTUP UNTUK KELAS
+      var html = '<div class="d-flex justify-content-end mb-2"><button class="btn btn-sm btn-outline-danger" onclick="tutupPerkembanganKelas()"><i class="fas fa-times"></i> Tutup Tabel</button></div>';
+      
+      html += '<table class="table table-bordered table-hover bg-white align-middle" style="font-size:14px;">';
+      html += '<thead class="table-primary text-center"><tr><th width="5%">No</th><th>Nama Siswa</th><th>Capaian Awal</th><th>Capaian Terakhir</th></tr></thead><tbody>';
+      
+      if(totalSiswa === 0) {
+        html += '<tr><td colspan="4" class="text-center text-muted py-3">Tidak ada data siswa untuk ' + kelas + '.</td></tr>';
+      } else {
+        res.data.forEach(function(r, idx) {
+          
+          // Hitung Statistik Aktif & Ketercapaian Target
+          if (r.akhir !== "Belum Setor") {
+            sudahSetorCount++;
+            // Hitung grafik merah hijau
+            if (r.akhir_tercapai) {
+               targetTercapaiCount++;
+            } else {
+               targetBelumCount++;
+            }
+          } else {
+            belumSetorCount++;
+          }
+
+          var badgeAwal = (r.awal === "Belum Setor") 
+            ? '<span class="badge bg-secondary text-white"><i class="fas fa-minus-circle me-1"></i> Belum Setor</span>'
+            : '<span style="background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 600; padding: 5px 12px; border-radius: 6px; font-size: 13px; display: inline-block;"><i class="fas fa-flag me-1"></i> ' + r.awal + '</span>';
+            
+          // Tambahkan indikator (X) atau (Ceklis) di capaian terakhir
+          var ikonTarget = (r.akhir_tercapai) ? '<i class="fas fa-check-circle me-1"></i> ' : '<i class="fas fa-times-circle text-danger me-1"></i> ';
+          var badgeAkhir = (r.akhir === "Belum Setor")
+            ? '<span class="badge bg-secondary text-white"><i class="fas fa-minus-circle me-1"></i> Belum Setor</span>'
+            : '<span style="background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; font-weight: 600; padding: 5px 12px; border-radius: 6px; font-size: 13px; display: inline-block;">' + ikonTarget + r.akhir + '</span>';
+
+          html += '<tr>' +
+                  '<td class="text-center fw-bold">' + (idx + 1) + '</td>' +
+                  '<td class="fw-bold text-dark">' + r.nama + '</td>' +
+                  '<td class="text-center">' + badgeAwal + '</td>' +
+                  '<td class="text-center">' + badgeAkhir + '</td>' +
+                  '</tr>';
+        });
+
+        // Tampilkan 3 Kartu Ringkasan
+        document.getElementById('statTotalSiswa').innerText = totalSiswa;
+        document.getElementById('statSudahSetor').innerText = sudahSetorCount;
+        document.getElementById('statBelumSetor').innerText = belumSetorCount;
+        
+        var persenAktif = totalSiswa > 0 ? Math.round((sudahSetorCount / totalSiswa) * 100) : 0;
+        document.getElementById('textPersenKelas').innerText = persenAktif + '% (' + sudahSetorCount + ' dari ' + totalSiswa + ' Siswa)';
+        var progressBar = document.getElementById('barPersenKelas');
+        progressBar.style.width = persenAktif + '%';
+
+        // --- RENDER GRAFIK TARGET (SEPERTI GAMBAR 382) ---
+        var persenBelumTarget = sudahSetorCount > 0 ? Math.round((targetBelumCount / sudahSetorCount) * 100) : 0;
+        var persenSudahTarget = sudahSetorCount > 0 ? Math.round((targetTercapaiCount / sudahSetorCount) * 100) : 0;
+
+        var htmlGrafikTarget = `
+          <div class="mt-4 p-3 border rounded bg-white shadow-sm mb-3">
+              <h6 class="fw-bold text-center mb-3"><i class="fas fa-chart-bar text-primary"></i> Grafik Ketercapaian Target Kelas (Dari ${sudahSetorCount} Siswa Aktif)</h6>
+              
+              <div class="mb-3">
+                  <small class="fw-bold text-danger d-block mb-1">${targetBelumCount} siswa belum mencapai target (${persenBelumTarget}%)</small>
+                  <div class="progress" style="height: 14px; border-radius: 7px; background-color: #f8d7da;">
+                      <div class="progress-bar bg-danger" role="progressbar" style="width: ${persenBelumTarget}%"></div>
+                  </div>
+              </div>
+
+              <div>
+                  <small class="fw-bold text-success d-block mb-1">${targetTercapaiCount} siswa mencapai target (${persenSudahTarget}%)</small>
+                  <div class="progress" style="height: 14px; border-radius: 7px; background-color: #d1e7dd;">
+                      <div class="progress-bar bg-success" role="progressbar" style="width: ${persenSudahTarget}%"></div>
+                  </div>
+              </div>
+          </div>
+        `;
+        // ------------------------------------------------
+
+        if (areaStat) {
+          // Sisipkan grafik target ke dalam area statistik
+          var grafikContainer = document.getElementById('containerGrafikTarget');
+          if(!grafikContainer) {
+            grafikContainer = document.createElement('div');
+            grafikContainer.id = 'containerGrafikTarget';
+            areaStat.appendChild(grafikContainer);
+          }
+          grafikContainer.innerHTML = htmlGrafikTarget;
+          areaStat.classList.remove('hidden');
+        }
+      }
+      
+      html += '</tbody></table>';
+      document.getElementById('tabelPerkembanganKelas').innerHTML = html;
+    })
+    .getPerkembanganKelasServer(kelas, userUnit);
+}
+
+// Mengubah header tabel secara otomatis saat jenis laporan diganti
+function ubahHeaderTabel() {
+  var jenis = document.getElementById("jenisLaporan").value;
+  var thead = document.getElementById("theadLaporan");
+  
+  if (jenis === "HARIAN") {
+    thead.innerHTML = `
+      <tr>
+        <th width="5%" class="text-center">No</th>
+        <th width="25%">Nama Siswa</th>
+        <th width="10%" class="text-center">Tgl</th>
+        <th width="15%" class="text-center">Ustadz</th>
+        <th width="22%" class="text-center">Capaian Awal</th>
+        <th width="23%" class="text-center">Status Tugas</th>
+      </tr>
+    `;
+  } else {
+    // Header Baru untuk Rekapitulasi: 6 Kolom
+    thead.innerHTML = `
+      <tr>
+        <th width="5%" class="text-center">No</th>
+        <th width="25%">Nama Siswa</th>
+        <th width="15%" class="text-center">Tgl Capaian Awal</th>
+        <th width="20%" class="text-center">Capaian Awal</th>
+        <th width="15%" class="text-center">Tgl Capaian Akhir</th>
+        <th width="20%" class="text-center">Capaian Akhir</th>
+      </tr>
+    `;
+  }
+  document.getElementById("tbodyLaporan").innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Silakan klik Tampilkan Laporan.</td></tr>`;
+}
+
+function renderTabelHarian(response) {
+  var tbody = document.getElementById("tbodyLaporan");
+  tbody.innerHTML = "";
+  if (response.status === "success" && response.data.length > 0) {
+    response.data.forEach((row, i) => {
+      tbody.innerHTML += `
+        <tr>
+          <td class="text-center">${i + 1}</td>
+          <td>${row.nama}</td>
+          <td class="text-center">${row.tgl}</td>
+          <td class="text-center">${row.ustadz || '-'}</td>
+          <td>${row.capaian}</td>
+          <td class="text-center">${row.statusTugas}</td>
+        </tr>`;
+    });
+  } else {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Tidak ada data harian pada periode ini.</td></tr>`;
+  }
+}
+
+function renderTabelRekap(response) {
+  var tbody = document.getElementById("tbodyLaporan");
+  tbody.innerHTML = "";
+  if (response.status === "success" && response.data.length > 0) {
+    response.data.forEach((row, i) => {
+      tbody.innerHTML += `
+        <tr>
+          <td class="text-center">${i + 1}</td>
+          <td>${row.nama}</td>
+          <td class="text-center">${row.tglAwal || '-'}</td>
+          <td class="text-center">${row.capaianAwal || '-'}</td>
+          <td class="text-center">${row.tglTerakhirStr || '-'}</td>
+          <td>${row.capaianAkhir || '-'}</td>
+        </tr>`;
+    });
+  } else {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Tidak ada data rekapitulasi pada periode ini.</td></tr>`;
+  }
+}
+
+// FUNGSI UNTUK MENUTUP TABEL KELAS
+function tutupPerkembanganKelas() {
+    var areaStat = document.getElementById('areaStatistikKelas');
+    if (areaStat) areaStat.classList.add('hidden');
+    document.getElementById('tabelPerkembanganKelas').innerHTML = '';
+}
+
+function tutupMonitoringUstadz() {
+    document.getElementById('tbodyMonitoring').innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><i class="fas fa-eye-slash fa-2x mb-2 d-block text-secondary"></i> Data disembunyikan. Silakan klik tombol <b>Cari</b> untuk menampilkan kembali.</td></tr>';
+}
+
+// ====================================================================
+// FUNGSI BARU: PANTAU TUGAS DI RUMAH
+// ====================================================================
+function cekTugasRumah() {
+  var tglMulai = document.getElementById('inputTglMulai') ? document.getElementById('inputTglMulai').value : '';
+  var tglAkhir = document.getElementById('inputTglAkhir') ? document.getElementById('inputTglAkhir').value : '';
+  var kelas = document.getElementById('selectFilterKelasTugas') ? document.getElementById('selectFilterKelasTugas').value : '';
+
+  if (!tglMulai || !tglAkhir) {
+    alert("Silakan tentukan rentang tanggal monitoring di bagian atas terlebih dahulu!");
+    return;
+  }
+
+  var areaTabel = document.getElementById('areaTabelTugas');
+  var tbody = document.getElementById('tbodyTugasRumah');
+
+  areaTabel.style.display = 'block';
+  tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i> Menarik data tugas di rumah...</td></tr>';
+
+  var userUnit = (typeof currentUser !== 'undefined' && currentUser.unit) ? currentUser.unit : '';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res.sukses) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-danger text-center py-3">' + res.pesan + '</td></tr>';
+        return;
+      }
+
+      if (res.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center py-3">Tidak ada tugas di rumah yang diberikan/ditemukan pada rentang tanggal ini.</td></tr>';
+        return;
+      }
+
+      var html = '';
+      res.data.forEach(function(item, index) {
+        var badgeStatus = '';
+        var statusTeks = (item.status || "").toLowerCase();
+        
+        // Warna label status yang dinamis
+        if (statusTeks.includes('sudah') || statusTeks.includes('selesai')) {
+          badgeStatus = '<span class="badge bg-success text-white py-1 px-2"><i class="fas fa-check-circle"></i> ' + item.status + '</span>';
+        } else if (statusTeks.includes('belum')) {
+          badgeStatus = '<span class="badge bg-danger text-white py-1 px-2"><i class="fas fa-times-circle"></i> ' + item.status + '</span>';
+        } else {
+          badgeStatus = '<span class="badge bg-secondary text-white py-1 px-2">' + item.status + '</span>';
+        }
+
+        html += '<tr>' +
+          '<td class="align-middle">' + (index + 1) + '</td>' +
+          '<td class="align-middle fw-bold text-start">' + item.nama_siswa + '</td>' +
+          '<td class="align-middle text-start text-primary fw-bold">' + item.tugas + '</td>' +
+          '<td class="align-middle">' + item.tanggal + '</td>' + // Menampilkan Tanggal
+          '<td class="align-middle text-start">' + item.ustadz + '</td>' +
+          '<td class="align-middle">' + badgeStatus + '</td>' +
+        '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+    })
+    .withFailureHandler(function(err) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-danger text-center py-3">Error: ' + err.message + '</td></tr>';
+    })
+    .getMonitoringTugasGS(tglMulai, tglAkhir, kelas, userUnit);
+}
+</script>
+
+<!-- FIREBASE CLIENT SDK (Versi 10.x - Modular) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+  apiKey: "AIzaSyBpvXWJCLoEjbxlnw8OJAZQDS9N7w1DQbM",
+  authDomain: "app-qiroahalmadinah.firebaseapp.com",
+  projectId: "app-qiroahalmadinah",
+  storageBucket: "app-qiroahalmadinah.firebasestorage.app",
+  messagingSenderId: "467621408282",
+  appId: "1:467621408282:web:789ec8370227a7cad1eba3"
+};
+
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.ambilRiwayatTerakhirDariFirestore = async function(idSiswaTarget) {
+    try {
+      console.log("🔍 Mencari data untuk ID Siswa:", idSiswaTarget);
+      
+      const setoranRef = collection(db, "Setoran"); 
+      
+      // PERBAIKAN: Tambahkan orderBy("tanggal", "desc") untuk mencari yang terbaru
+      const q = query(
+        setoranRef, 
+        where("id_siswa", "==", String(idSiswaTarget)), 
+        orderBy("tanggal", "desc"), // <--- BARIS INI DITAMBAHKAN
+        limit(1)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        const data = doc.data();
+        console.log("✅ Data terbaru ditemukan di Firestore:", data);
+
+        return {
+          ditemukan: true,
+          idQiroah: doc.id,
+          tanggal: data.tanggal || "",
+          jilid: data.jilid_kitab || data.jilid || "-",
+          halaman: data.halaman || "-",
+          status: data.status_lancar || data.status_setoran || data.status || "-", // Sesuai Screenshot 470
+          catatan: data.catatan || "-",
+          tugasRumah: data.tugas_rumah || data.tugasRumah || "-",
+          
+          // 🚀 TAMBAHAN WAJIB AGAR CHECKBOX BISA TAMPIL SAAT DIEDIT
+          murojaah: data.murojaah_di_rumah || "",
+          membacaSekolah: data.membaca_di_sekolah || "",
+          murojaahTeman: data.murojaah_bersama_teman || "",
+          
+          // ⚠️ PENTING UNTUK GSHEET: Jika mengambil langsung dari Firestore, 
+          // pastikan saat Simpan Setoran, variabel rowIndex juga ikut disave ke Firestore.
+          rowIndex: data.rowIndex || data.row_index || "" 
+        };
+      } else {
+        console.warn("⚠️ Data tidak ditemukan untuk ID Siswa:", idSiswaTarget);
+        return { ditemukan: false };
+      }
+    } catch (error) {
+      console.error("❌ Error Firestore Query:", error);
+      return { ditemukan: false, error: error.message };
+    }
+  };
+
+
+window.updatePengujiOtomatis = function(index, rowIndexSheet) {
+  let inputTgl = document.getElementById(`tglPelaksanaan_${index}`);
+  let tanggalBaru = inputTgl ? inputTgl.value : "";
+  let namaPengujiAktif = (typeof currentUser !== 'undefined' && (currentUser.nama || currentUser.username)) ? (currentUser.nama || currentUser.username) : "Penguji";
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      console.log("Jadwal dan Penguji berhasil disimpan!");
+      
+      let spanPenguji = document.getElementById(`namaPenguji_${index}`);
+      if (spanPenguji) {
+        spanPenguji.innerText = namaPengujiAktif;
+        spanPenguji.className = "font-weight-bold text-primary";
+      }
+    })
+    .withFailureHandler(function(err) {
+      alert("Gagal menyimpan jadwal: " + err.message);
+    })
+    .serverSimpanJadwalPenguji(rowIndexSheet, tanggalBaru, namaPengujiAktif);
+};
+
+window.bukaModalPengajuan = function() {
+  let selectSiswa = document.getElementById("optSiswa");
+  if (!selectSiswa || selectSiswa.value === "" || selectSiswa.options[selectSiswa.selectedIndex].text.includes("--")) {
+    alert("Silakan pilih Nama Siswa yang valid terlebih dahulu!");
+    return;
+  }
+  
+  let namaSiswaText = selectSiswa.options[selectSiswa.selectedIndex].text;
+  let namaPengaju = (typeof currentUser !== 'undefined' && (currentUser.nama || currentUser.username)) ? (currentUser.nama || currentUser.username) : "Guru";
+  
+  let jilidVal = "";
+  let bodyText = document.body.innerText || "";
+  let matchRiwayat = bodyText.match(/(?:Terakhir:\s*|Riwayat:[\s\S]{0,50}?)(At-Tartil\s*Jilid\s*\d+|Al-Qur'an\s*\(Talaqqi\)|Jilid\s*\d+)/i);
+  
+  if (matchRiwayat && matchRiwayat[1]) {
+    jilidVal = matchRiwayat[1]; 
+  } 
+  
+  if (!jilidVal) {
+    let selectJilid = document.getElementById("optJilid") || document.querySelector("select[id*='jilid']");
+    if (selectJilid && selectJilid.options.length > 0) {
+      jilidVal = selectJilid.options[selectJilid.selectedIndex].text;
+    }
+  }
+  
+  let modal = document.getElementById("modalPengajuan");
+  if (modal) {
+    document.getElementById("modalNamaSiswa").value = namaSiswaText;
+    document.getElementById("modalDiajukanOleh").value = namaPengaju;
+    
+    // Set nilai dropdown Jilid secara otomatis jika cocok, jika tidak kosongkan
+    let selectJilidModal = document.getElementById("modalJilidDiuji");
+    if (selectJilidModal) {
+      selectJilidModal.value = jilidVal;
+      // Jika teks jilid tidak ada di pilihan dropdown, reset ke default
+      if (selectJilidModal.value === "") {
+        selectJilidModal.selectedIndex = 0;
+      }
+    }
+    
+    modal.style.display = "flex";
+  }
+};
+
+window.tutupModalPengajuan = function() {
+  let modal = document.getElementById("modalPengajuan");
+  if (modal) {
+    modal.style.display = "none";
+  }
+};
+
+window.kirimPengajuanKenaikan = function() {
+  let btn = document.getElementById("btnKirimPengajuan");
+  let originalText = btn ? btn.innerText : "Kirim";
+  
+  let elSiswa = document.getElementById("modalNamaSiswa");
+  let elJilid = document.getElementById("modalJilidDiuji"); // Ini sekarang mengambil nilai dari <select>
+  let elPengaju = document.getElementById("modalDiajukanOleh");
+
+  let dataPengajuan = {
+    tanggalDiajukan: new Date().toLocaleDateString('id-ID'),
+    diajukanOleh: elPengaju ? elPengaju.value : "Guru",
+    namaSiswa: elSiswa ? elSiswa.value : "",
+    jilidDiuji: elJilid ? elJilid.value : "",
+    namaPenguji: "" 
+  };
+
+  if (!dataPengajuan.namaSiswa || !dataPengajuan.jilidDiuji) {
+    alert("Mohon pastikan Nama Siswa dan Jilid yang Diujikan sudah dipilih dengan benar!");
+    return;
+  }
+
+  if (btn) {
+    btn.innerText = "Mengirim...";
+    btn.disabled = true;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      alert("Berhasil! Pengajuan Kenaikan Jilid telah masuk ke antrean.");
+      if (btn) {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+      tutupModalPengajuan();
+      
+      if (typeof muatDaftarAntrean === 'function') {
+        muatDaftarAntrean();
+      }
+    })
+    .withFailureHandler(function(err) {
+      alert("TERJADI KESALAHAN: " + err.message);
+      if (btn) {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+    })
+    .serverSimpanPengajuanKenaikan(dataPengajuan);
+};
+
+// 1. Deklarasi variabel global untuk menyimpan data antrean
+let antreanListGlobal = [];
+
+// 2. Fungsi memuat daftar antrean dari server Apps Script
+function muatDaftarAntrean() {
+  let tbody = document.getElementById("tabelAntreanBody");
+  if (tbody) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-muted py-3"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat data antrean...</td></tr>`;
+  }
+
+  google.script.run
+    .withSuccessHandler(renderTabelAntrean)
+    .withFailureHandler(function(err) {
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-danger py-3">Gagal memuat data: ${err.message}</td></tr>`;
+      }
+    })
+    .getDaftarAntrean();
+}
+
+// 3. Fungsi untuk menggambar baris tabel dari data antrean (Difilter Berdasarkan Unit Akun Aktif)
+let statusTampilSemua = false;
+
+function renderTabelAntrean(data, tampilkanSemua = false) {
+  let tbody = document.getElementById("tabelAntreanBody");
+  if (!tbody) return;
+
+  // Pastikan data adalah array yang valid
+  let dataMentah = data || [];
+
+  // FILTER UNIT: Sesuaikan dengan unit dari akun yang sedang login
+  if (typeof currentUser !== 'undefined' && currentUser && currentUser.unit) {
+    let unitPenguji = currentUser.unit.toLowerCase().trim();
+    
+    // Jika bukan admin pusat, saring data berdasarkan unit
+    if (unitPenguji !== "pusat" && unitPenguji !== "admin") {
+      dataMentah = dataMentah.filter(item => {
+        let unitSiswa = (item.unit || "").toLowerCase().trim();
+        return unitSiswa.includes(unitPenguji);
+      });
+    }
+  }
+
+  // Simpan data yang sudah terfilter ke variabel global
+  window.antreanListGlobal = dataMentah;
+
+  if (dataMentah.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-muted py-3">Tidak ada antrean ujian untuk unit Anda (${currentUser ? currentUser.unit : '-'}).</td></tr>`;
+    
+    // Hapus tombol "Lihat Selengkapnya" jika ada
+    let containerBtn = document.getElementById("containerBtnLihatSemua");
+    if (containerBtn) containerBtn.remove();
+    return;
+  }
+
+  // Tentukan data yang akan dirender (maksimal 8 jika belum diklik "Lihat Selengkapnya")
+  let dataYangDitampilkan = tampilkanSemua ? dataMentah : dataMentah.slice(0, 8);
+
+  let html = "";
+  dataYangDitampilkan.forEach(function(item, index) {
+    let namaPenguji = item.namaPenguji ? `<span class="font-weight-bold text-primary" id="namaPenguji_${index}">${item.namaPenguji}</span>` : `<span class="text-muted" id="namaPenguji_${index}">Belum diisi</span>`;
+    
+    html += `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${item.tanggalDiajukan || '-'}</td>
+        <td>${item.diajukanOleh || '-'}</td>
+        <td class="text-left font-weight-bold">${item.namaSiswa}<br><small class="text-muted">Kls: ${item.kelas} | Unit: ${item.unit}</small></td>
+        <td><span class="badge badge-info p-2">${item.jilid || '-'}</span></td>
+        <td>
+          <input type="date" id="tglPelaksanaan_${index}" class="form-control form-control-sm" value="${item.tanggalPelaksanaan || ''}" onchange="updatePengujiOtomatis(${index}, ${item.rowIndex})">
+        </td>
+        <td>${namaPenguji}</td>
+        <td>
+          <button class="btn btn-sm btn-success font-weight-bold px-3" onclick="mulaiUjian(${index})">
+            <i class="fas fa-play-circle mr-1"></i> Eksekusi
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+
+  // Kelola Tombol "Lihat Selengkapnya" / "Tampilkan Lebih Sedikit" di bawah tabel
+  let tableWrapper = tbody.closest(".table-responsive") || tbody.closest("table").parentNode;
+  let containerBtn = document.getElementById("containerBtnLihatSemua");
+
+  if (!containerBtn) {
+    containerBtn = document.createElement("div");
+    containerBtn.id = "containerBtnLihatSemua";
+    containerBtn.className = "text-center mt-3 mb-2";
+    tableWrapper.parentNode.insertBefore(containerBtn, tableWrapper.nextSibling);
+  }
+
+  // Hanya tampilkan tombol jika total data terfilter lebih dari 8
+  if (dataMentah.length > 8) {
+    if (!tampilkanSemua) {
+      containerBtn.innerHTML = `
+        <button class="btn btn-outline-success btn-sm font-weight-bold px-4 py-2 shadow-sm" onclick="toggleLihatSemua(true)">
+          <i class="fas fa-chevron-down mr-1"></i> Lihat Selengkapnya (${dataMentah.length - 8} data lainnya)
+        </button>
+      `;
+    } else {
+      containerBtn.innerHTML = `
+        <button class="btn btn-outline-secondary btn-sm font-weight-bold px-4 py-2 shadow-sm" onclick="toggleLihatSemua(false)">
+          <i class="fas fa-chevron-up mr-1"></i> Tampilkan Lebih Sedikit
+        </button>
+      `;
+    }
+  } else {
+    containerBtn.innerHTML = ""; // Hapus tombol jika data <= 8
+  }
+
+  // Jalankan inisialisasi rekapan jika ada
+  if (typeof initTabelRekapanUI === 'function') initTabelRekapanUI();
+  if (typeof window.muatDaftarRekapan === 'function') window.muatDaftarRekapan();
+}
+
+// Fungsi pengalih saat tombol Lihat Selengkapnya diklik
+window.toggleLihatSemua = function(status) {
+  statusTampilSemua = status;
+  renderTabelAntrean(window.antreanListGlobal, statusTampilSemua);
+};
+
+// 4. Fungsi Tombol Eksekusi (Membuka Form Penilaian Tampilan Vertikal/Mobile Friendly)
+window.mulaiUjian = function(index) {
+  let item = window.antreanListGlobal[index];
+  if (!item) {
+    alert("Data antrean tidak ditemukan!");
+    return;
+  }
+  
+  let namaPengujiEl = document.getElementById(`namaPenguji_${index}`);
+  let namaPenguji = namaPengujiEl ? namaPengujiEl.innerText : "Penguji";
+  
+  if (namaPenguji === "Belum diisi" || namaPenguji === "-") {
+    alert("Silakan isi dan simpan Tanggal Pelaksanaan terlebih dahulu!");
+    return;
+  }
+
+  // Sembunyikan bagian tabel antrean & header menu penguji utama secara rapi
+  let cardUtama = document.getElementById("tabelAntreanBody") ? document.getElementById("tabelAntreanBody").closest(".card") : null;
+  if (cardUtama) cardUtama.style.display = "none";
+
+  let headerPenguji = document.querySelector("#pagePenguji .header-card");
+  if (headerPenguji) headerPenguji.style.display = "none";
+
+  let btnKembaliAtas = document.querySelector("#pagePenguji .mb-3");
+  if (btnKembaliAtas) btnKembaliAtas.style.display = "none";
+  
+  let formContainer = document.getElementById("halamanUjianContainer");
+  if (!formContainer) {
+    formContainer = document.createElement("div");
+    formContainer.id = "halamanUjianContainer";
+    if (cardUtama && cardUtama.parentNode) {
+      cardUtama.parentNode.insertBefore(formContainer, cardUtama);
+    } else {
+      document.body.appendChild(formContainer);
+    }
+  }
+  formContainer.style.display = "block";
+  
+  let jilidStr = (item.jilid || "").toLowerCase();
+  let isJilid12 = jilidStr.includes("jilid 1") || jilidStr.includes("jilid 2");
+  
+  // Opsi Dropdown Jilid 1 sampai 5
+  let opsiJilidHTML = `
+    <option value="">-- Pilih Jilid --</option>
+    <option value="At-Tartil Jilid 1">At-Tartil Jilid 1</option>
+    <option value="At-Tartil Jilid 2">At-Tartil Jilid 2</option>
+    <option value="At-Tartil Jilid 3">At-Tartil Jilid 3</option>
+    <option value="At-Tartil Jilid 4">At-Tartil Jilid 4</option>
+    <option value="At-Tartil Jilid 5">At-Tartil Jilid 5</option>
+    <option value="Al-Qur'an">Al-Qur'an</option>
+  `;
+
+  // Format Aspek Penilaian Vertikal ke Bawah
+  let aspekHTML = "";
+  if (isJilid12) {
+    aspekHTML = `
+      <div class="form-group mb-2"><label class="small font-weight-bold">1. Kelancaran Membaca</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_0" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+      <div class="form-group mb-2"><label class="small font-weight-bold">2. Ketepatan Makhraj</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_1" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+      <div class="form-group mb-2"><label class="small font-weight-bold">3. Ketepatan Harakat</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_2" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+      <div class="form-group mb-3"><label class="small font-weight-bold">4. Adab & Sikap Membaca</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_3" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+    `;
+  } else {
+    aspekHTML = `
+      <div class="form-group mb-2"><label class="small font-weight-bold">1. Kelancaran Membaca</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_0" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+      <div class="form-group mb-2"><label class="small font-weight-bold">2. Ketepatan Makhraj</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_1" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+      <div class="form-group mb-2"><label class="small font-weight-bold">3. Ketepatan Harakat</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_2" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+      <div class="form-group mb-2"><label class="small font-weight-bold">4. Penerapan Tajwid</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_3" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+      <div class="form-group mb-3"><label class="small font-weight-bold">5. Adab & Sikap Membaca</label><input type="number" class="form-control form-control-sm nilai-aspek" id="aspek_4" min="0" max="100" value="100" oninput="hitungNilaiUjian()"></div>
+    `;
+  }
+
+  formContainer.innerHTML = `
+    <div class="card shadow mb-4">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0" style="font-size: 1.1rem;"><i class="fas fa-clipboard-check"></i> Form Penilaian Ujian Siswa</h4>
+      </div>
+      <div class="card-body">
+        
+        <!-- Kotak Informasi Siswa -->
+        <div class="alert alert-light border mb-3 p-2 small">
+          <div class="row">
+            <div class="col-6 mb-1"><strong>Siswa:</strong><br>${item.namaSiswa}</div>
+            <div class="col-6 mb-1"><strong>Kelas / Unit:</strong><br>${item.kelas} / ${item.unit}</div>
+            <div class="col-6"><strong>Tgl Ujian:</strong><br>${item.tanggalPelaksanaan || 'Hari Ini'}</div>
+            <div class="col-6"><strong>Penguji:</strong><br>${namaPenguji}</div>
+          </div>
+        </div>
+
+        <!-- Dropdown Jilid Asal & Jilid Tujuan -->
+        <div class="form-row mb-3">
+          <div class="col-6">
+            <label class="small font-weight-bold">Jilid Asal:</label>
+            <select id="jilidAsal" class="form-control form-control-sm">
+              ${opsiJilidHTML}
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="small font-weight-bold text-success">Jilid Tujuan:</label>
+            <select id="jilidTujuan" class="form-control form-control-sm">
+              ${opsiJilidHTML}
+            </select>
+          </div>
+        </div>
+
+        <hr>
+        <h6 class="font-weight-bold text-secondary small mb-3">Aspek Penilaian (Skala 0 - 100):</h6>
+        ${aspekHTML}
+        <hr>
+
+        <!-- Kotak Ringkasan Nilai -->
+        <div class="p-2 bg-light rounded mb-3 text-center border">
+          <span class="small font-weight-bold">Jumlah Nilai Akhir: <span id="txtTotalNilai" class="text-primary h5">100</span></span><br>
+          <span class="small">Predikat: <strong id="txtPredikat" class="text-dark">Mumtaz</strong></span> | 
+          <span class="small">Status: <strong id="txtKeputusan" class="text-success">Lulus</strong></span>
+        </div>
+
+        <!-- Catatan Penguji -->
+        <div class="form-group mb-3">
+          <label class="small font-weight-bold">Catatan Penguji:</label>
+          <textarea id="catatanUjian" class="form-control form-control-sm" rows="3" placeholder="Tuliskan catatan evaluasi..."></textarea>
+        </div>
+
+        <!-- Tombol Aksi Sejajar Berpasangan -->
+        <div class="form-row mb-2" style="display: flex;">
+          <div class="col-6 pr-1" style="padding-right: 4px;">
+            <button type="button" class="btn btn-secondary btn-block btn-sm py-2 font-weight-bold" onclick="kembaliKeMenuPenguji()" style="background-color: #800000; border-color: #800000;">
+              <i class="fas fa-arrow-left mr-1"></i> Batal
+            </button>
+          </div>
+          <div class="col-6 pl-1" style="padding-left: 4px;">
+            <button type="button" class="btn btn-success btn-block btn-sm py-2 font-weight-bold" onclick="simpanDanSelesaikanUjian(${index})">
+              <i class="fas fa-save mr-1"></i> Simpan Hasil Ujian
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row" style="display: flex;">
+          <div class="col-6 pr-1" style="padding-right: 4px;">
+            <button type="button" class="btn btn-outline-dark btn-block btn-sm py-2 font-weight-bold" onclick="cetakDokumenUjian('LEMBAR', ${index})">
+              <i class="fas fa-print mr-1"></i> Cetak Lembar Nilai
+            </button>
+          </div>
+          <div class="col-6 pl-1" style="padding-left: 4px;">
+            <button type="button" class="btn btn-outline-primary btn-block btn-sm py-2 font-weight-bold" onclick="cetakDokumenUjian('SKL', ${index})">
+              <i class="fas fa-certificate mr-1"></i> Cetak SK Lulus
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+  
+  // Set nilai default dropdown jilid asal sesuai data item antrean
+  setTimeout(() => {
+    let selAsal = document.getElementById('jilidAsal');
+    if (selAsal) selAsal.value = item.jilid || "";
+  }, 100);
+
+  window.scrollTo(0, 0);
+  if (typeof hitungNilaiUjian === 'function') hitungNilaiUjian();
+};
+
+// Panggil muatDaftarAntrean saat halaman dimuat atau saat navigasi ke menu Penguji
+document.addEventListener("DOMContentLoaded", function() {
+  muatDaftarAntrean();
+});
+
+// Fungsi untuk kembali mundur satu langkah dari Form Penilaian ke Tabel Antrean
+window.kembaliKeMenuPenguji = function() {
+  let formContainer = document.getElementById("halamanUjianContainer");
+  if (formContainer) {
+    formContainer.style.display = "none";
+    formContainer.innerHTML = "";
+  }
+  
+  // Munculkan kembali bagian utama menu penguji
+  let tbodyEl = document.getElementById("tabelAntreanBody");
+  let cardUtama = tbodyEl ? tbodyEl.closest(".card") : null;
+  if (cardUtama) cardUtama.style.display = "block";
+
+  let headerPenguji = document.querySelector("#pagePenguji .header-card");
+  if (headerPenguji) headerPenguji.style.display = "flex";
+
+  let btnKembaliAtas = document.querySelector("#pagePenguji .mb-3");
+  if (btnKembaliAtas) btnKembaliAtas.style.display = "block";
+  
+  if (typeof muatDaftarAntrean === 'function') {
+    muatDaftarAntrean();
+  }
+};
+
+window.kembaliKeMenuUtamaDariPenguji = function() {
+  // 1. Sembunyikan halaman penguji dengan benar
+  let pagePenguji = document.getElementById("pagePenguji");
+  if (pagePenguji) {
+    pagePenguji.classList.add("hidden");
+    pagePenguji.style.display = "none"; 
+  }
+
+  // 2. Tutup form ujian jika sedang terbuka
+  let formContainer = document.getElementById("halamanUjianContainer");
+  if (formContainer) {
+    formContainer.style.display = "none";
+    formContainer.innerHTML = "";
+  }
+  
+  // 3. Tampilkan kembali card tabel utama antrean jika sempat disembunyikan
+  let tbodyEl = document.getElementById("tabelAntreanBody");
+  let cardUtama = tbodyEl ? tbodyEl.closest(".card") : null;
+  if (cardUtama) {
+    cardUtama.style.display = "block";
+  }
+
+  // 4. Pindah kembali ke Menu Utama menggunakan fungsi bukaPage standar
+  if (typeof bukaPage === 'function') {
+    bukaPage('MenuUtama');
+  } else if (typeof navigasiMenu === 'function') {
+    navigasiMenu('MenuUtama');
+  }
+};
+
+// 1. Fungsi Perhitungan Nilai Dinamis Berdasarkan Bobot Aspek
+window.hitungNilaiUjian = function() {
+  let inputs = document.querySelectorAll('.nilai-aspek');
+  let count = inputs.length; // 4 aspek untuk Jilid 1-2, 5 aspek untuk Jilid 3-5
+
+  let total = 0;
+  if (count === 4) {
+    // Bobot Jilid 1 & 2 (Kelancaran: 35%, Makhraj: 30%, Harakat: 20%, Adab: 15%)
+    let kel = parseFloat(document.getElementById('aspek_0')?.value) || 0;
+    let mak = parseFloat(document.getElementById('aspek_1')?.value) || 0;
+    let har = parseFloat(document.getElementById('aspek_2')?.value) || 0;
+    let adb = parseFloat(document.getElementById('aspek_3')?.value) || 0;
+    total = (kel * 0.35) + (mak * 0.30) + (har * 0.20) + (adb * 0.15);
+  } else {
+    // Bobot Jilid 3-5 (Kelancaran: 30%, Makhraj: 25%, Harakat: 15%, Tajwid: 20%, Adab: 10%)
+    let kel = parseFloat(document.getElementById('aspek_0')?.value) || 0;
+    let mak = parseFloat(document.getElementById('aspek_1')?.value) || 0;
+    let har = parseFloat(document.getElementById('aspek_2')?.value) || 0;
+    let taj = parseFloat(document.getElementById('aspek_3')?.value) || 0;
+    let adb = parseFloat(document.getElementById('aspek_4')?.value) || 0;
+    total = (kel * 0.30) + (mak * 0.25) + (har * 0.15) + (taj * 0.20) + (adb * 0.10);
+  }
+
+  total = Math.round(total * 10) / 10; // Pembulatan 1 desimal
+
+  let txtTotal = document.getElementById('txtTotalNilai');
+  if (txtTotal) txtTotal.innerText = total;
+
+  let predikat = "-";
+  let status = "-";
+
+  if (total >= 90) {
+    predikat = "Mumtaz (Istimewa)";
+    status = "LULUS";
+  } else if (total >= 80) {
+    predikat = "Jayyid Jiddan (Sangat Baik)";
+    status = "LULUS";
+  } else if (total >= 70) {
+    predikat = "Jayyid (Baik)";
+    status = "LULUS";
+  } else {
+    predikat = "Mengulang";
+    status = "BELUM LULUS";
+  }
+
+  let elPredikat = document.getElementById('txtPredikat');
+  let elKeputusan = document.getElementById('txtKeputusan');
+
+  if (elPredikat) elPredikat.innerText = predikat;
+  if (elKeputusan) {
+    elKeputusan.innerText = status;
+    elKeputusan.className = (status === "LULUS") ? "text-success font-weight-bold" : "text-danger font-weight-bold";
+  }
+};
+
+// 2. Fungsi Menyimpan Hasil Ujian ke Spreadsheet
+window.simpanDanSelesaikanUjian = function(index) {
+  let item = window.antreanListGlobal[index];
+  if (!item) {
+    alert("Data antrean tidak ditemukan!");
+    return;
+  }
+
+  let jilidStr = (item.jilid || "").toLowerCase();
+  let isJilid12 = jilidStr.includes("jilid 1") || jilidStr.includes("jilid 2");
+
+  let valKelancaran = document.getElementById('aspek_0')?.value || "0";
+  let valMakhraj = document.getElementById('aspek_1')?.value || "0";
+  let valHarakat = document.getElementById('aspek_2')?.value || "0";
+  let valTajwid = isJilid12 ? "-" : (document.getElementById('aspek_3')?.value || "0");
+  let valAdab = isJilid12 ? (document.getElementById('aspek_3')?.value || "0") : (document.getElementById('aspek_4')?.value || "0");
+
+  let namaPengujiActive = (typeof currentUser !== 'undefined' && (currentUser.nama || currentUser.username)) 
+    ? (currentUser.nama || currentUser.username) 
+    : "Penguji";
+
+  let dataUjian = {
+    rowIndex: item.rowIndex,
+    idSiswa: item.idSiswa || "",
+    namaSiswa: item.namaSiswa,
+    kelas: item.kelas || "-",
+    unit: item.unit || "-",
+    jilid: item.jilid,
+    diajukanOleh: item.diajukanOleh || "-",
+    tanggalPelaksanaan: item.tanggalPelaksanaan || new Date().toLocaleDateString('id-ID'),
+    namaPenguji: namaPengujiActive,
+    kelancaran: valKelancaran,
+    makhraj: valMakhraj,
+    harakat: valHarakat,
+    tajwid: valTajwid,
+    adab: valAdab,
+    totalNilai: document.getElementById('txtTotalNilai')?.innerText || "0",
+    predikat: document.getElementById('txtPredikat')?.innerText || "-",
+    keputusan: document.getElementById('txtKeputusan')?.innerText || "-",
+    catatan: document.getElementById('catatanUjian')?.value || "",
+    ustadz: namaPengujiActive,
+    unitUser: (typeof currentUser !== 'undefined' && currentUser.unit) ? currentUser.unit : item.unit
+  };
+
+  let btn = event.target.closest('button');
+  let originalBtnText = btn ? btn.innerHTML : "Simpan Hasil Ujian";
+  if (btn) {
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
+    btn.disabled = true;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      alert("Hasil ujian berhasil disimpan! Data telah dipindahkan ke Rekapan.");
+      if (typeof kembaliKeMenuPenguji === 'function') kembaliKeMenuPenguji();
+    })
+    .withFailureHandler(function(err) {
+      alert("Gagal menyimpan hasil ujian: " + err.message);
+      if (btn) {
+        btn.innerHTML = originalBtnText;
+        btn.disabled = false;
+      }
+    })
+    .serverSimpanRekapanUjian(dataUjian);
+};
+
+// 3. Fungsi Cetak Lembar Nilai & SK Lulus
+window.cetakDokumenUjian = function(tipe, index) {
+  let item = (typeof index !== 'undefined') ? window.antreanListGlobal[index] : null;
+  
+  let idSiswa = item ? (item.idSiswa || item.namaSiswa) : "";
+  let unit = (typeof currentUser !== 'undefined' && currentUser.unit) ? currentUser.unit : (item ? item.unit : "");
+  let jilidAsal = encodeURIComponent(item ? item.jilid : "");
+
+  if (!idSiswa) {
+    alert("Data siswa tidak valid untuk mencetak dokumen!");
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(urlApp) {
+      let urlCetak = urlApp + "?page=cetakUjian&tipe=" + tipe + "&idSiswa=" + encodeURIComponent(idSiswa) + "&unit=" + encodeURIComponent(unit) + "&jilidAsal=" + jilidAsal;
+      window.open(urlCetak, '_blank');
+    })
+    .getScriptUrl();
+};
+
+</script>
+</body>
+</html>

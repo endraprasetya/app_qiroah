@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Times New Roman', Times, serif; padding: 30px; color: #000; font-size: 15px; }
+    .header { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #000; padding-bottom: 10px; }
+    .box-surat { border: 2px solid #000; padding: 25px; position: relative; }
+    table.info { width: 100%; margin-bottom: 15px; }
+    table.aspek { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    table.aspek th, table.aspek td { border: 1px solid #000; padding: 6px 10px; }
+    table.aspek th { background: #f2f2f2; text-align: center; }
+    .tanda-tangan { width: 100%; display: flex; justify-content: space-between; margin-top: 40px; text-align: center; }
+    .ttd-box { width: 200px; }
+    .ttd-space { height: 75px; }
+    @media print {
+      body { padding: 0; }
+      @page { margin: 1.5cm; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="no-print" onclick="window.print()" style="padding: 10px 20px; margin-bottom: 20px; cursor: pointer;">🖨️ Cetak Dokumen</button>
+
+  <div id="wadahCetak">
+    <div class="text-center" style="font-size:16px;">Memuat dokumen...</div>
+  </div>
+
+  <script>
+  window.onload = function() {
+    var idSiswa = "<?= idSiswa ?>";
+    var unit = "<?= unit ?>";
+    var tipe = "<?= tipe ?>"; // "LEMBAR" atau "SKL"
+    var jilidAsal = "<?= jilidAsal ?>";
+    var jilidTujuan = "<?= jilidTujuan ?>";
+
+    // Mengubah judul halaman agar otomatis menjadi nama file PDF saat disimpan
+    if (tipe === "LEMBAR") {
+      document.title = "Cetak Nilai Ujian Qiroah";
+    } else {
+      document.title = "Surat Keterangan Lulus Ujian Qiroah";
+    }
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res.status === "success") {
+          var data = res.data;
+          var html = "";
+
+            if (tipe === "SKL") {
+              // FORMAT SURAT KETERANGAN LULUS (GAMBAR 786)
+              html = `
+                <div class="box-surat">
+                  <div style="text-align:center; font-weight:bold; font-size:13px; margin-bottom: 10px;">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+                  <div class="header" style="border-bottom:none; margin-bottom:10px;">
+                    <h3 style="margin:0;">SURAT KETERANGAN</h3>
+                    <h4 style="margin:0; font-weight:normal;">UJIAN KENAIKAN JILID BUKU TARTIL DALAM PROGRAM QIRA'ATUL QUR'AN</h4>
+                    <p style="margin:5px 0;">Nomor : ....................................................</p>
+                  </div>
+                  <p>Dengan memohon rahmat Allah Subhanahu wa Ta'ala, menerangkan bahwa:</p>
+                  <table class="info">
+                    <tr><td width="20%">Nama</td><td width="2%">:</td><td><strong>${data.nama}</strong></td></tr>
+                    <tr><td>Kelas</td><td>:</td><td>${data.kelas}</td></tr>
+                  </table>
+                  <p style="text-align:center; margin: 20px 0;">Telah mengikuti dan dinyatakan</p>
+                  <h2 style="text-align:center; letter-spacing: 2px; margin: 10px 0;">LULUS</h2>
+                  <p style="text-align:center;">Ujian Kenaikan Jilid Buku Tartil Dalam Program Qira'atul Qur'an<br>
+                  Dari Tartil <strong>${jilidAsal}</strong> menuju Tartil <strong>${jilidTujuan}</strong>, dengan predikat:</p>
+                  <p style="text-align:center; font-weight:bold;">
+                    [ ${data.predikat.includes('Mumtaz') ? '✔' : '&nbsp;'} ] Mumtaz &nbsp;&nbsp;&nbsp;
+                    [ ${data.predikat.includes('Jayyid Jiddan') ? '✔' : '&nbsp;'} ] Jayyid Jiddan &nbsp;&nbsp;&nbsp;
+                    [ ${data.predikat.includes('Jayyid') && !data.predikat.includes('Jiddan') ? '✔' : '&nbsp;'} ] Jayyid
+                  </p>
+                  <p style="text-style:italic; font-size:14px; text-align:center; margin-top:20px;">
+                    "Semoga Allah Subhanahu wa Ta'ala memberikan keberkahan ilmu dan menjadikan Al-Qur'an sebagai petunjuk dalam kehidupan."
+                  </p>
+
+                  <div class="tanda-tangan">
+                    <div class="ttd-box">
+                      <p>Penguji</p>
+                      <div class="ttd-space"></div>
+                      <p><strong>(............................)</strong></p>
+                    </div>
+                    <div class="ttd-box">
+                      <p>Koordinator QQ</p>
+                      <div class="ttd-space"></div>
+                      <p><strong>(............................)</strong></p>
+                    </div>
+                    <div class="ttd-box">
+                      <p>${unit || 'Surakarta'}, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}<br>Kepala Sekolah</p>
+                      <div class="ttd-space"></div>
+                      <p><strong><u>${res.namaKepsek}</u></strong></p>
+                    </div>
+                  </div>
+                </div>
+              `;
+            } else {
+              // FORMAT LEMBAR PENILAIAN (GAMBAR 787)
+              html = `
+                <div class="header">
+                  <h3 style="margin:0;">LEMBAR PENILAIAN</h3>
+                  <h3 style="margin:0;">UJIAN KENAIKAN JILID BUKU AT TARTIL</h3>
+                  <h4 style="margin:0; font-weight:normal;">SDIT AL MADINAH ${unit.toUpperCase()}</h4>
+                </div>
+                <table class="info" style="font-size:14px;">
+                  <tr><td width="15%">Nama</td><td width="2%">:</td><td><strong>${data.nama}</strong></td></tr>
+                  <tr><td>Kelas</td><td>:</td><td>${data.kelas}</td></tr>
+                  <tr><td>Jilid</td><td>:</td><td>At-Tartil (${jilidAsal} ➔ ${jilidTujuan})</td></tr>
+                  <tr><td>Tanggal Ujian</td><td>:</td><td>${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</td></tr>
+                </table>
+
+                <table class="aspek">
+                  <thead>
+                    <tr><th width="70%">Aspek Penilaian</th><th width="30%">Nilai</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>1. Kelancaran Membaca (Bobot 30)</td><td style="text-align:center;">${data.kelancaran}</td></tr>
+                    <tr><td>2. Ketepatan Makhraj (Bobot 25)</td><td style="text-align:center;">${data.makhraj}</td></tr>
+                    <tr><td>3. Ketepatan Harakat (Bobot 15)</td><td style="text-align:center;">${data.harakat}</td></tr>
+                    <tr><td>4. Penerapan Tajwid (Bobot 20)</td><td style="text-align:center;">${data.tajwid}</td></tr>
+                    <tr><td>5. Adab dan Sikap Membaca Al-Qur'an (Bobot 10)</td><td style="text-align:center;">${data.adab}</td></tr>
+                    <tr><th style="text-align:right;">Jumlah Nilai :</th><th style="text-align:center; font-size:16px;">${data.totalNilai}</th></tr>
+                  </tbody>
+                </table>
+
+                <div style="border: 1px solid #000; padding: 10px; margin-bottom: 15px; font-size:13px;">
+                  <strong>Kriteria Kelulusan:</strong><br>
+                  90 - 100 : Mumtaz (Istimewa)<br>
+                  80 - 89 : Jayyid Jiddan (Sangat Baik)<br>
+                  70 - 79 : Jayyid (Baik)<br>
+                  &lt; 70 : Mengulang
+                </div>
+
+                <div style="border: 1px solid #000; padding: 10px; margin-bottom: 20px; font-size:14px;">
+                  <strong>Keputusan Penguji:</strong><br>
+                  [ ${data.status === 'LULUS' ? '✔' : '&nbsp;'} ] <strong>LULUS</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  [ ${data.status !== 'LULUS' ? '✔' : '&nbsp;'} ] <strong>BELUM LULUS</strong> (Predikat: ${data.predikat})
+                </div>
+
+                <div style="border: 1px solid #000; padding: 10px; min-height: 50px; margin-bottom: 20px; font-size:14px;">
+                  <strong>Catatan:</strong><br>${data.catatan || '-'}
+                </div>
+
+                <div class="tanda-tangan">
+                  <div class="ttd-box"></div>
+                  <div class="ttd-box">
+                    <p>Penguji,</p>
+                    <div class="ttd-space"></div>
+                    <p><strong><u>${data.ustadz || '............................'}</u></strong></p>
+                  </div>
+                </div>
+              `;
+            }
+            document.getElementById('wadahCetak').innerHTML = html;
+          } else {
+            alert("Gagal memuat data ujian.");
+          }
+        })
+        .getDataSiswaForCetakUjian(idSiswa);
+    };
+  </script>
+</body>
+</html>
